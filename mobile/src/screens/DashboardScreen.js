@@ -6,6 +6,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
+  Image,
 } from 'react-native';
 import * as Location from 'expo-location';
 import SurfaceCard from '../components/SurfaceCard';
@@ -63,8 +64,11 @@ const DashboardScreen = ({ navigation }) => {
 
         <View style={styles.headerActions}>
           <TouchableOpacity onPress={() => navigation.navigate('Settings')}>
-            {/* Replace with real icon later */}
-            <View style={styles.settingsIcon} />
+            <Image
+              source={require('../../assets/settings.jpg')}
+              style={styles.settingsIcon}
+              resizeMode="contain"
+            />
           </TouchableOpacity>
         </View>
       </View>
@@ -80,7 +84,13 @@ const DashboardScreen = ({ navigation }) => {
               styles.shieldCircle,
               guardianActive && styles.shieldCircleActive,
             ]}
-          />
+          >
+            <Image
+              source={require('../../assets/shield.jpg')}
+              style={styles.shieldImage}
+              resizeMode="contain"
+            />
+          </View>
           <Text style={styles.guardianTitle}>
             {guardianActive ? 'GUARDIAN ACTIVE' : 'TAP TO ACTIVATE'}
           </Text>
@@ -179,14 +189,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
-    paddingHorizontal: SPACING.xl,
-    paddingTop: SPACING.xxl,
+    paddingHorizontal: SPACING.lg,   // slightly smaller
+    paddingTop: SPACING.xl,
   },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: SPACING.xxl,
+    marginBottom: SPACING.xl,
   },
   appName: {
     color: COLORS.textPrimary,
@@ -202,19 +212,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   settingsIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: COLORS.surface,
+    width: 28,
+    height: 28,
   },
   guardianCard: {
     alignItems: 'center',
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.xl,
   },
   shieldCircle: {
-    width: 220,
-    height: 220,
-    borderRadius: 110,
+    width: 200,
+    height: 200,
+    borderRadius: 100,
     borderWidth: 2,
     borderColor: COLORS.primary,
     justifyContent: 'center',
@@ -225,25 +233,30 @@ const styles = StyleSheet.create({
     borderColor: COLORS.accent,
     backgroundColor: 'rgba(34,197,94,0.15)',
   },
+  shieldImage: {
+    width: 96,
+    height: 96,
+  },
   guardianTitle: {
     color: COLORS.textSecondary,
     letterSpacing: 2,
   },
   statusCard: {
-    marginBottom: SPACING.xxl,
+    marginHorizontal: 4,
+    marginBottom: SPACING.xl,
   },
   statusTitle: {
     color: COLORS.accent,
-    fontSize: FONT.subtitle,
+    fontSize: FONT.body,
     fontWeight: '600',
   },
   statusSubtitle: {
     color: COLORS.textSecondary,
-    fontSize: FONT.body,
+    fontSize: FONT.caption,
     marginTop: SPACING.xs,
   },
   locationBlock: {
-    marginTop: SPACING.lg,
+    marginTop: SPACING.md,
   },
   locationLabel: {
     color: COLORS.textSecondary,
@@ -252,7 +265,7 @@ const styles = StyleSheet.create({
   },
   locationValue: {
     color: COLORS.textPrimary,
-    fontSize: FONT.body,
+    fontSize: FONT.caption,
     fontWeight: '500',
   },
   errorText: {
@@ -262,7 +275,8 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
-    gap: SPACING.lg,
+    gap: SPACING.md,
+    marginTop: SPACING.md,
   },
   col: {
     flex: 1,
@@ -280,16 +294,16 @@ const styles = StyleSheet.create({
   bottomBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: SPACING.xxl,
+    marginTop: SPACING.xl,
     marginBottom: SPACING.xl,
   },
   actionCard: {
     flex: 1,
-    height: 64,
-    borderRadius: 18,
+    height: 60,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal: 4,
+    marginHorizontal: 6,
   },
   actionLabel: {
     color: COLORS.textPrimary,

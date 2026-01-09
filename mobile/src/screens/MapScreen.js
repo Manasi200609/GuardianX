@@ -1,28 +1,59 @@
 // src/screens/MapScreen.js
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import * as Location from 'expo-location';
+import MapView, { Marker } from 'react-native-maps';
 import { COLORS, SPACING, FONT } from '../utils/theme';
-import PrimaryButton from '../components/PrimaryButton';
 
-const MapScreen = ({ navigation }) => {
+const MapScreen = () => {
+  const [location, setLocation] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert(
+          'Location Permission Denied',
+          'Enable location to see your route.'
+        );
+        return;
+      }
+
+      const loc = await Location.getCurrentPositionAsync({});
+      setLocation(loc.coords);
+    })();
+  }, []);
+
+  if (!location) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+        <Text style={styles.loadingText}>Fetching your location...</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Live Location</Text>
-      <Text style={styles.subtitle}>
-        Map integration can be added here (Google Maps / Mapbox).
-      </Text>
-
-      <View style={styles.card}>
-        <Text style={styles.placeholder}>
-          Map placeholder for hackathon demo.
-        </Text>
-      </View>
-
-      <PrimaryButton
-        title="Back to Dashboard"
-        onPress={() => navigation.goBack()}
-        style={{ marginTop: SPACING.xl }}
-      />
+      <Text style={styles.title}>Your Current Location</Text>
+      <MapView
+        style={styles.map}
+        initialRegion={{
+          latitude: location.latitude,
+          longitude: location.longitude,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        }}
+        showsUserLocation
+      >
+        <Marker
+          coordinate={{
+            latitude: location.latitude,
+            longitude: location.longitude,
+          }}
+          title="You are here"
+        />
+      </MapView>
     </View>
   );
 };
@@ -33,28 +64,28 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
-    padding: SPACING.xl,
+    padding: SPACING.lg,
   },
   title: {
     color: COLORS.textPrimary,
-    fontSize: FONT.title,
+    fontSize: FONT.subtitle,
     fontWeight: '700',
-    marginBottom: SPACING.sm,
+    textAlign: 'center',
+    marginBottom: SPACING.md,
   },
-  subtitle: {
-    color: COLORS.textSecondary,
-    fontSize: FONT.body,
-    marginBottom: SPACING.xl,
-  },
-  card: {
-    backgroundColor: COLORS.surface,
+  map: {
     flex: 1,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderRadius: 16,
+    overflow: 'hidden',
   },
-  placeholder: {
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
     color: COLORS.textSecondary,
-    fontSize: FONT.body,
+    marginTop: SPACING.md,
   },
 });

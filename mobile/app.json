@@ -1,0 +1,49 @@
+{
+  "expo": {
+    "name": "GuardianX",
+    "slug": "guardianx",
+    "scheme": "guardianx",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#050811"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.yourname.guardianx",
+      "config": {
+        "googleMapsApiKey": "AIzaSyBXdgE7_3ooab9rQFmdZaNTW27MVaJUULE"
+      }
+    },
+    "android": {
+      "package": "com.yourname.guardianx",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#050811"
+      },
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyBXdgE7_3ooab9rQFmdZaNTW27MVaJUULE"
+        }
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-maps",
+      "expo-location"
+    ]
+  }
+}

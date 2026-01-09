@@ -1,17 +1,30 @@
-const mongoose = require("mongoose");
+// models/User.js
+const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true },
-    phone: { type: String, required: true, unique: true },
-    emergencyContacts: [{  
-    name: { type: String, required: true },
-    phone: { type: String, required: true } 
-  }],
-    gesturePattern: { type: String },
-    guardianMode: { type: Boolean, default: false }
+    name: {
+      type: String,
+      required: true,
+      minlength: 2,
+      maxlength: 100,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,        // avoid duplicate accounts
+      lowercase: true,     // normalize email case
+      trim: true,
+    },
+    password: {
+      type: String,
+      required: true,
+      minlength: 6,
+    },
+    // any other fields (contacts, gesture, guardianMode, etc.)
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model("User", userSchema);
+const User = mongoose.model('User', userSchema);
+module.exports = User;

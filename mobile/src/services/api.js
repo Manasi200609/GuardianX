@@ -11,13 +11,27 @@ const api = axios.create({
 
 /* ============== AUTH ================= */
 
-export const signupUser = (data) => api.post('/register', data);
+export async function signupUser({ name, email, password }) {
+  const response = await axios.post(`${API_BASE_URL}/register`, {
+    name,
+    email,
+    password,
+  });
+  // expect your controller to send { success: true, user, message }
+  return response.data;
+}
 
 // You don’t have a login route yet in this router,
 // so either create one in backend or temporarily skip loginUser
 // export const loginUser = (data) => api.post('/login', data);
 
-export const loginUser = (data) => api.post('/login', data);
+export async function loginUser({ email, password }) {
+  const response = await axios.post(`${API_BASE_URL}/login`, {
+    email,
+    password,
+  });
+  return response.data;
+}
 /* ============ GUARDIAN MODE ============ */
 
 export const toggleGuardianMode = (userId, data) =>

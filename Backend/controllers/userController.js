@@ -5,19 +5,22 @@ exports.registerUser = async (req, res) => {
   try {
     const { name, email , password } = req.body;
 
-    const user = await User.create({
-      name,
-      email,
-      password,
-      phone:null,
-      emergencyContacts: [],
-      guardianMode: false,
-      gesturePattern: null,
-    });
+    if (!name || !email || !password) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'All fields are required' });
+    }
 
-    res.status(201).json(user);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
+    // ... check if user exists, hash password, save user ...
+
+    return res
+      .status(201)
+      .json({ success: true, message: 'User created', user: savedUser });
+  } catch (err) {
+    console.error('Register error:', err);
+    return res
+      .status(500)
+      .json({ success: false, message: 'Server error during signup' });
   }
 };
 

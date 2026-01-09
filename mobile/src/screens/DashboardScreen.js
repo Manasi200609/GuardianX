@@ -9,39 +9,38 @@ import {
   Image,
 } from 'react-native';
 import * as Location from 'expo-location';
+import { LinearGradient } from 'expo-linear-gradient';
 import SurfaceCard from '../components/SurfaceCard';
 import { COLORS, SPACING, FONT } from '../utils/theme';
 
 const DashboardScreen = ({ navigation }) => {
   const [guardianActive, setGuardianActive] = React.useState(false);
   const [location, setLocation] = React.useState(null);
-  const [locationError, setLocationError] = React.useState(null);
 
   const startLocationTracking = async () => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        setLocationError('Location permission denied');
+        Alert.alert(
+          'Location Permission',
+          'Enable location to use GuardianX properly.'
+        );
         return;
       }
-
       const current = await Location.getCurrentPositionAsync({});
       setLocation(current.coords);
-      setLocationError(null);
     } catch (e) {
-      setLocationError('Could not get location');
+      Alert.alert('Error', 'Could not get your location.');
     }
   };
 
   const toggleGuardian = async () => {
     const next = !guardianActive;
     setGuardianActive(next);
-
     if (next) {
       await startLocationTracking();
     } else {
       setLocation(null);
-      setLocationError(null);
     }
   };
 
@@ -54,274 +53,377 @@ const DashboardScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.headerRow}>
-        <View>
-          <Text style={styles.appName}>GuardianX</Text>
-          <Text style={styles.tagline}>Your safety companion</Text>
-        </View>
-
-        <View style={styles.headerActions}>
-          <TouchableOpacity onPress={() => navigation.navigate('Settings')}>
-            <Image
-              source={require('../../assets/settings.jpg')}
-              style={styles.settingsIcon}
-              resizeMode="contain"
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Big shield button */}
-      <TouchableOpacity onPress={toggleGuardian}>
-        <SurfaceCard
-          style={styles.guardianCard}
-          variant={guardianActive ? 'highlight' : 'default'}
-        >
-          <View
-            style={[
-              styles.shieldCircle,
-              guardianActive && styles.shieldCircleActive,
-            ]}
-          >
-            <Image
-              source={require('../../assets/shield.jpg')}
-              style={styles.shieldImage}
-              resizeMode="contain"
-            />
+    <View style={styles.screen}>
+      {/* TOP GRADIENT HEADER */}
+      <LinearGradient
+        colors={['#020617', '#020617']}
+        style={styles.headerBackground}
+      >
+        <View style={styles.headerBar}>
+          <View>
+            <Text style={styles.appName}>GuardianX</Text>
+            <Text style={styles.tagline}>Your safety companion</Text>
           </View>
-          <Text style={styles.guardianTitle}>
+
+          <View style={styles.headerIcons}>
+            <TouchableOpacity
+              style={styles.headerIconButton}
+              onPress={() => {}}
+            >
+              <Image
+                source={require('../../assets/history.png')}
+                style={styles.headerIcon}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.headerIconButton}
+              onPress={() => navigation.navigate('Settings')}
+            >
+              <Image
+                source={require('../../assets/settings.jpg')}
+                style={styles.headerIcon}
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* BIG SHIELD */}
+        <TouchableOpacity
+          activeOpacity={0.9}
+          onPress={toggleGuardian}
+          style={styles.shieldWrapper}
+        >
+          <LinearGradient
+            colors={
+              guardianActive
+                ? ['#22c55e', '#0ea5e9']
+                : ['#0f172a', '#020617']
+            }
+            style={styles.shieldOuter}
+          >
+            <View style={styles.shieldMiddle}>
+              <View style={styles.shieldInner}>
+                <Image
+                  source={require('../../assets/shield-line.png')}
+                  style={styles.shieldIcon}
+                  resizeMode="contain"
+                />
+              </View>
+            </View>
+          </LinearGradient>
+          <Text style={styles.guardianLabel}>
             {guardianActive ? 'GUARDIAN ACTIVE' : 'TAP TO ACTIVATE'}
           </Text>
-        </SurfaceCard>
-      </TouchableOpacity>
-
-      {/* Status + location card when active */}
-      {guardianActive && (
-        <SurfaceCard style={styles.statusCard}>
-          <Text style={styles.statusTitle}>Guardian Active</Text>
-          <Text style={styles.statusSubtitle}>
+          <Text style={styles.guardianSubLabel}>
             Monitoring your safety
           </Text>
+        </TouchableOpacity>
+      </LinearGradient>
 
-          {location && (
-            <View style={styles.locationBlock}>
-              <Text style={styles.locationLabel}>Location Tracking</Text>
-              <Text style={styles.locationValue}>
-                {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
+      {/* CONTENT CARDS */}
+      <View style={styles.content}>
+        {/* LOCATION CARD */}
+        {guardianActive && (
+          <SurfaceCard style={styles.locationCard}>
+            <View style={styles.locationHeaderRow}>
+              <View style={styles.locationIconCircle}>
+                <Text style={styles.locationIconText}>📍</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.locationTitle}>Location Tracking</Text>
+                <Text style={styles.locationStatus}>Active &amp; Sharing</Text>
+              </View>
+            </View>
+
+            <View style={styles.locationDetailRow}>
+              <Text style={styles.detailLabel}>Coordinates</Text>
+              <Text style={styles.detailValue}>
+                {location
+                  ? `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(
+                      4
+                    )}`
+                  : '-- , --'}
               </Text>
             </View>
-          )}
 
-          {locationError && (
-            <Text style={styles.errorText}>{locationError}</Text>
-          )}
+            <View style={styles.locationDetailRow}>
+              <Text style={styles.detailLabel}>Last Update</Text>
+              <Text style={styles.detailValue}>Just now</Text>
+            </View>
+
+            <View style={styles.locationDetailRow}>
+              <Text style={styles.detailLabel}>Accuracy</Text>
+              <Text style={styles.detailAccent}>±14 m</Text>
+            </View>
+          </SurfaceCard>
+        )}
+
+        {/* GESTURE CARD */}
+        <SurfaceCard style={styles.gestureCard}>
+          <View style={styles.gestureLeft}>
+            <View style={styles.gestureIconCircle}>
+              <Text style={styles.locationIconText}>🎛️</Text>
+            </View>
+            <View>
+              <Text style={styles.locationTitle}>Gesture Detection</Text>
+              <Text style={styles.gestureSubtitle}>
+                Triple tap • high sensitivity
+              </Text>
+            </View>
+          </View>
+          <View style={styles.gestureDot} />
         </SurfaceCard>
-      )}
 
-      {/* Two small cards */}
-      <View style={styles.row}>
-        <TouchableOpacity
-          style={styles.col}
-          onPress={() => navigation.navigate('Contacts')}
-        >
-          <SurfaceCard>
-            <Text style={styles.cardTitle}>Contacts</Text>
-            <Text style={styles.cardSubtitle}>2 configured</Text>
-          </SurfaceCard>
-        </TouchableOpacity>
+        {/* BOTTOM ACTION BUTTONS */}
+        <View style={styles.bottomRow}>
+          <TouchableOpacity
+            style={[styles.actionTile, styles.callTile]}
+            onPress={handleCall}
+          >
+            <Text style={styles.actionIcon}>📞</Text>
+            <Text style={styles.actionText}>Call 112</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.col}
-          onPress={() => navigation.navigate('Gesture')}
-        >
-          <SurfaceCard>
-            <Text style={styles.cardTitle}>Gesture</Text>
-            <Text style={styles.cardSubtitle}>Triple tap</Text>
-          </SurfaceCard>
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity
+            style={[styles.actionTile, styles.alertTile]}
+            onPress={handleAlert}
+          >
+            <Text style={styles.actionIcon}>⚠️</Text>
+            <Text style={styles.actionText}>Alert</Text>
+          </TouchableOpacity>
 
-      {/* Wide safe route card */}
-      <SurfaceCard style={{ marginTop: SPACING.lg }}>
-        <Text style={styles.cardTitle}>Plan Safe Route</Text>
-        <Text style={styles.cardSubtitle}>
-          Find the safest path to your destination
-        </Text>
-      </SurfaceCard>
+          <TouchableOpacity
+            style={[styles.actionTile, styles.routeTile]}
+            onPress={() => navigation.navigate('Map')}
+          >
+            <Text style={styles.actionIcon}>🗺️</Text>
+            <Text style={styles.actionText}>Safe Route</Text>
+          </TouchableOpacity>
 
-      {/* Bottom action bar */}
-      <View style={styles.bottomBar}>
-        <TouchableOpacity
-          style={[styles.actionCard, styles.callCard]}
-          onPress={handleCall}
-        >
-          <Text style={styles.actionLabel}>Call 112</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.actionCard, styles.alertCard]}
-          onPress={handleAlert}
-        >
-          <Text style={styles.actionLabel}>Alert</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.actionCard, styles.routeCard]}
-          onPress={() => navigation.navigate('Map')}
-        >
-          <Text style={styles.actionLabel}>Safe Route</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.actionCard, styles.contactsCard]}
-          onPress={() => navigation.navigate('Contacts')}
-        >
-          <Text style={styles.actionLabel}>Contacts</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.actionTile, styles.contactsTile]}
+            onPress={() => navigation.navigate('Contacts')}
+          >
+            <Text style={styles.actionIcon}>👥</Text>
+            <Text style={styles.actionText}>Contacts</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
 };
 
+export default DashboardScreen;
+
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
-    backgroundColor: COLORS.background,
-    paddingHorizontal: SPACING.lg,   // slightly smaller
-    paddingTop: SPACING.xl,
+    backgroundColor: '#020617',
   },
-  headerRow: {
+  headerBackground: {
+    paddingTop: SPACING.xl,
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.lg,
+  },
+  headerBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: SPACING.xl,
-  },
-  appName: {
-    color: COLORS.textPrimary,
-    fontSize: FONT.title,
-    fontWeight: '700',
-  },
-  tagline: {
-    color: COLORS.textSecondary,
-    fontSize: FONT.body,
-    marginTop: SPACING.xs,
-  },
-  headerActions: {
-    flexDirection: 'row',
-  },
-  settingsIcon: {
-    width: 28,
-    height: 28,
-  },
-  guardianCard: {
-    alignItems: 'center',
-    marginBottom: SPACING.xl,
-  },
-  shieldCircle: {
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    borderWidth: 2,
-    borderColor: COLORS.primary,
-    justifyContent: 'center',
     alignItems: 'center',
     marginBottom: SPACING.lg,
   },
-  shieldCircleActive: {
-    borderColor: COLORS.accent,
-    backgroundColor: 'rgba(34,197,94,0.15)',
+  appName: {
+    color: '#e5e7eb',
+    fontSize: FONT.subtitle,
+    fontWeight: '700',
   },
-  shieldImage: {
-    width: 96,
-    height: 96,
+  tagline: {
+    color: '#6b7280',
+    fontSize: FONT.caption,
+    marginTop: 2,
   },
-  guardianTitle: {
-    color: COLORS.textSecondary,
-    letterSpacing: 2,
+  headerIcons: {
+    flexDirection: 'row',
+    gap: 10,
   },
-  statusCard: {
-    marginHorizontal: 4,
-    marginBottom: SPACING.xl,
+  headerIconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: '#020617',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  statusTitle: {
-    color: COLORS.accent,
+  headerIcon: {
+    width: 20,
+    height: 20,
+    tintColor: '#9ca3af',
+  },
+
+  shieldWrapper: {
+    alignItems: 'center',
+    marginTop: SPACING.md,
+  },
+  shieldOuter: {
+    width: 260,
+    height: 260,
+    borderRadius: 130,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  shieldMiddle: {
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    backgroundColor: '#0f172a',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  shieldInner: {
+    width: 170,
+    height: 170,
+    borderRadius: 85,
+    backgroundColor: '#0ea5e9',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  shieldIcon: {
+    width: 80,
+    height: 80,
+    tintColor: 'white',
+  },
+  guardianLabel: {
+    marginTop: SPACING.md,
+    color: '#38bdf8',
+    letterSpacing: 3,
+    fontWeight: '600',
+  },
+  guardianSubLabel: {
+    marginTop: 4,
+    color: '#6b7280',
+    fontSize: FONT.caption,
+  },
+
+  content: {
+    flex: 1,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.md,
+  },
+
+  locationCard: {
+    borderRadius: 24,
+    paddingVertical: SPACING.md,
+    marginBottom: SPACING.md,
+  },
+  locationHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.md,
+  },
+  locationIconCircle: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: '#022c22',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: SPACING.md,
+  },
+  locationIconText: {
+    fontSize: 20,
+  },
+  locationTitle: {
+    color: '#e5e7eb',
     fontSize: FONT.body,
     fontWeight: '600',
   },
-  statusSubtitle: {
-    color: COLORS.textSecondary,
+  locationStatus: {
+    color: '#22c55e',
     fontSize: FONT.caption,
-    marginTop: SPACING.xs,
+    marginTop: 2,
   },
-  locationBlock: {
-    marginTop: SPACING.md,
-  },
-  locationLabel: {
-    color: COLORS.textSecondary,
-    fontSize: FONT.caption,
-    marginBottom: SPACING.xs,
-  },
-  locationValue: {
-    color: COLORS.textPrimary,
-    fontSize: FONT.caption,
-    fontWeight: '500',
-  },
-  errorText: {
-    marginTop: SPACING.lg,
-    color: '#F97373',
-    fontSize: FONT.caption,
-  },
-  row: {
-    flexDirection: 'row',
-    gap: SPACING.md,
-    marginTop: SPACING.md,
-  },
-  col: {
-    flex: 1,
-  },
-  cardTitle: {
-    color: COLORS.textPrimary,
-    fontSize: FONT.subtitle,
-    fontWeight: '600',
-    marginBottom: SPACING.xs,
-  },
-  cardSubtitle: {
-    color: COLORS.textSecondary,
-    fontSize: FONT.caption,
-  },
-  bottomBar: {
+  locationDetailRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: SPACING.xl,
+    marginTop: 6,
+  },
+  detailLabel: {
+    color: '#6b7280',
+    fontSize: FONT.caption,
+  },
+  detailValue: {
+    color: '#e5e7eb',
+    fontSize: FONT.caption,
+  },
+  detailAccent: {
+    color: '#22c55e',
+    fontSize: FONT.caption,
+  },
+
+  gestureCard: {
+    borderRadius: 24,
+    paddingVertical: SPACING.md,
+    marginBottom: SPACING.lg,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  gestureLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  gestureIconCircle: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: '#0f172a',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: SPACING.md,
+  },
+  gestureSubtitle: {
+    color: '#9ca3af',
+    fontSize: FONT.caption,
+    marginTop: 2,
+  },
+  gestureDot: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#22c55e',
+  },
+
+  bottomRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: SPACING.xl,
   },
-  actionCard: {
+  actionTile: {
     flex: 1,
-    height: 60,
-    borderRadius: 24,
-    alignItems: 'center',
+    height: 82,
+    borderRadius: 20,
     justifyContent: 'center',
-    marginHorizontal: 6,
+    alignItems: 'center',
+    marginHorizontal: 4,
   },
-  actionLabel: {
-    color: COLORS.textPrimary,
-    fontSize: FONT.body,
+  actionIcon: {
+    fontSize: 20,
+    marginBottom: 4,
+  },
+  actionText: {
+    color: '#e5e7eb',
+    fontSize: FONT.caption,
     fontWeight: '600',
   },
-  callCard: {
-    backgroundColor: '#7F1D1D',
+  callTile: {
+    backgroundColor: '#7f1d1d',
   },
-  alertCard: {
-    backgroundColor: '#7C2D12',
+  alertTile: {
+    backgroundColor: '#78350f',
   },
-  routeCard: {
-    backgroundColor: '#0F172A',
+  routeTile: {
+    backgroundColor: '#0f172a',
   },
-  contactsCard: {
-    backgroundColor: '#111827',
+  contactsTile: {
+    backgroundColor: '#1e1b4b',
   },
 });
-
-export default DashboardScreen;

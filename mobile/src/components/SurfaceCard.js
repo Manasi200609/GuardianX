@@ -15,10 +15,10 @@ const SurfaceCard = ({ children, variant = 'default', style }) => {
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: RADIUS.lg,
-    padding: SPACING.lg,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+   backgroundColor: COLORS.card,
+    borderRadius: 18,
+    padding: SPACING.md,
+    marginBottom: SPACING.md,
   },
 });
 

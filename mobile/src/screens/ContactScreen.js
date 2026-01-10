@@ -114,6 +114,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
     padding: SPACING.xl,
+    color : COLORS.textPrimary,
   },
   title: {
     color: COLORS.textPrimary,
@@ -149,6 +150,7 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
     fontSize: FONT.body,
     fontWeight: '600',
+    
   },
   contactPhone: {
     color: COLORS.textSecondary,

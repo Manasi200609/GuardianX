@@ -1,46 +1,57 @@
 // src/screens/DashboardScreen.js
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  Alert,
   Image,
+  Modal,
+  Alert,
 } from 'react-native';
 import * as Location from 'expo-location';
-import { LinearGradient } from 'expo-linear-gradient';
-import SurfaceCard from '../components/SurfaceCard';
-import { COLORS, SPACING, FONT } from '../utils/theme';
+
 
 const DashboardScreen = ({ navigation }) => {
-  const [guardianActive, setGuardianActive] = React.useState(false);
+  const [guardianActive, setGuardianActive] = useState(false);
   const [location, setLocation] = React.useState(null);
+  const [locationError, setLocationError] = React.useState(null);
+  const [showSOSSheet, setShowSOSSheet] = useState(false);
+
+    const handleAlertSOS = () => {
+    setShowSOSSheet(true);
+
+    // auto close after 5 seconds
+    setTimeout(() => {
+      setShowSOSSheet(false);
+    }, 5000);
+  };
 
   const startLocationTracking = async () => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert(
-          'Location Permission',
-          'Enable location to use GuardianX properly.'
-        );
+        setLocationError('Location permission denied');
         return;
       }
+
       const current = await Location.getCurrentPositionAsync({});
       setLocation(current.coords);
+      setLocationError(null);
     } catch (e) {
-      Alert.alert('Error', 'Could not get your location.');
+      setLocationError('Could not get location');
     }
   };
 
   const toggleGuardian = async () => {
     const next = !guardianActive;
     setGuardianActive(next);
+
     if (next) {
       await startLocationTracking();
     } else {
       setLocation(null);
+      setLocationError(null);
     }
   };
 
@@ -53,162 +64,277 @@ const DashboardScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.screen}>
-      {/* TOP GRADIENT HEADER */}
-      <LinearGradient
-        colors={['#020617', '#020617']}
-        style={styles.headerBackground}
-      >
-        <View style={styles.headerBar}>
-          <View>
-            <Text style={styles.appName}>GuardianX</Text>
-            <Text style={styles.tagline}>Your safety companion</Text>
-          </View>
-
-          <View style={styles.headerIcons}>
-            <TouchableOpacity
-              style={styles.headerIconButton}
-              onPress={() => {}}
-            >
-              <Image
-                source={require('../../assets/history.png')}
-                style={styles.headerIcon}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.headerIconButton}
-              onPress={() => navigation.navigate('Settings')}
-            >
-              <Image
-                source={require('../../assets/settings.jpg')}
-                style={styles.headerIcon}
-              />
-            </TouchableOpacity>
+    <View style={styles.app}>
+      {/* HEADER */}
+      <View style={styles.header}>
+        <View style={styles.headerLeft}>
+          <View style={styles.brand}>
+            <View style={styles.brandRow}>
+              <View style={styles.brandLogoCircle}>
+                <Image
+                  source={require('../../assets/guardianx-logo.png.jpeg')}
+                  style={styles.brandLogoImg}
+                />
+              </View>
+              <Text style={styles.brandTitle}>GuardianX</Text>
+            </View>
+            <Text style={styles.brandSubtitle}>Your safety companion</Text>
           </View>
         </View>
 
-        {/* BIG SHIELD */}
-        <TouchableOpacity
-          activeOpacity={0.9}
-          onPress={toggleGuardian}
-          style={styles.shieldWrapper}
-        >
-          <LinearGradient
-            colors={
-              guardianActive
-                ? ['#22c55e', '#0ea5e9']
-                : ['#0f172a', '#020617']
-            }
-            style={styles.shieldOuter}
-          >
-            <View style={styles.shieldMiddle}>
-              <View style={styles.shieldInner}>
-                <Image
-                  source={require('../../assets/shield-line.png')}
-                  style={styles.shieldIcon}
-                  resizeMode="contain"
-                />
-              </View>
-            </View>
-          </LinearGradient>
-          <Text style={styles.guardianLabel}>
-            {guardianActive ? 'GUARDIAN ACTIVE' : 'TAP TO ACTIVATE'}
-          </Text>
-          <Text style={styles.guardianSubLabel}>
-            Monitoring your safety
-          </Text>
-        </TouchableOpacity>
-      </LinearGradient>
-
-      {/* CONTENT CARDS */}
-      <View style={styles.content}>
-        {/* LOCATION CARD */}
-        {guardianActive && (
-          <SurfaceCard style={styles.locationCard}>
-            <View style={styles.locationHeaderRow}>
-              <View style={styles.locationIconCircle}>
-                <Text style={styles.locationIconText}>📍</Text>
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.locationTitle}>Location Tracking</Text>
-                <Text style={styles.locationStatus}>Active &amp; Sharing</Text>
-              </View>
-            </View>
-
-            <View style={styles.locationDetailRow}>
-              <Text style={styles.detailLabel}>Coordinates</Text>
-              <Text style={styles.detailValue}>
-                {location
-                  ? `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(
-                      4
-                    )}`
-                  : '-- , --'}
-              </Text>
-            </View>
-
-            <View style={styles.locationDetailRow}>
-              <Text style={styles.detailLabel}>Last Update</Text>
-              <Text style={styles.detailValue}>Just now</Text>
-            </View>
-
-            <View style={styles.locationDetailRow}>
-              <Text style={styles.detailLabel}>Accuracy</Text>
-              <Text style={styles.detailAccent}>±14 m</Text>
-            </View>
-          </SurfaceCard>
-        )}
-
-        {/* GESTURE CARD */}
-        <SurfaceCard style={styles.gestureCard}>
-          <View style={styles.gestureLeft}>
-            <View style={styles.gestureIconCircle}>
-              <Text style={styles.locationIconText}>🎛️</Text>
-            </View>
-            <View>
-              <Text style={styles.locationTitle}>Gesture Detection</Text>
-              <Text style={styles.gestureSubtitle}>
-                Triple tap • high sensitivity
-              </Text>
-            </View>
-          </View>
-          <View style={styles.gestureDot} />
-        </SurfaceCard>
-
-        {/* BOTTOM ACTION BUTTONS */}
-        <View style={styles.bottomRow}>
-          <TouchableOpacity
-            style={[styles.actionTile, styles.callTile]}
-            onPress={handleCall}
-          >
-            <Text style={styles.actionIcon}>📞</Text>
-            <Text style={styles.actionText}>Call 112</Text>
+        <View style={styles.headerRight}>
+          <TouchableOpacity style={styles.iconBtn} onPress={() => {}}>
+            <Text style={styles.iconLabel}>⟳</Text>
           </TouchableOpacity>
-
           <TouchableOpacity
-            style={[styles.actionTile, styles.alertTile]}
-            onPress={handleAlert}
+            style={styles.iconBtn}
+            onPress={() => navigation.navigate('Settings')}
           >
-            <Text style={styles.actionIcon}>⚠️</Text>
-            <Text style={styles.actionText}>Alert</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.actionTile, styles.routeTile]}
-            onPress={() => navigation.navigate('Map')}
-          >
-            <Text style={styles.actionIcon}>🗺️</Text>
-            <Text style={styles.actionText}>Safe Route</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.actionTile, styles.contactsTile]}
-            onPress={() => navigation.navigate('Contacts')}
-          >
-            <Text style={styles.actionIcon}>👥</Text>
-            <Text style={styles.actionText}>Contacts</Text>
+            <Text style={styles.iconLabel}>⚙</Text>
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* SHIELD AREA */}
+      <TouchableOpacity onPress={toggleGuardian} activeOpacity={0.9}>
+        <View style={styles.shieldSection}>
+          <View style={styles.shieldOuter}>
+            <View style={styles.shieldMiddle}>
+              <View
+                style={[
+                  [styles.shieldInner, styles.shieldOuter],
+                  guardianActive
+                    ? [styles.shieldInnerActive, styles.shieldOuterActive]
+                    : [styles.shieldInnerInactive, styles.shieldOuterInactive]
+                ]}
+              > 
+                <Image
+                  source={
+                    guardianActive
+                      ? require('../../assets/s2.jpeg') // shield with tick
+                      : require('../../assets/s1.jpeg') // plain shield
+                  }
+                  style={styles.shieldImg}
+                />
+              </View>
+            </View>
+          </View>
+          <Text
+            style={[
+              styles.guardianLabel,
+              guardianActive
+                ? styles.guardianLabelActive
+                : styles.guardianLabelInactive,
+            ]}
+          >
+            {guardianActive ? 'GUARDIAN ACTIVE' : 'TAP TO ACTIVATE'}
+          </Text>
+          <Text style={styles.guardianSub}>Monitoring your safety</Text>
+        </View>
+      </TouchableOpacity>
+
+      {/* CARDS – switch content + style based on guardianActive */}
+      {guardianActive ? (
+        <>
+          {/* LOCATION – ACTIVE (opens MapScreen) */}
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={() => navigation.navigate('Map')} // Stack.Screen name
+          >
+            <View style={[styles.card, styles.locationCard]}>
+              <View style={styles.cardHeader}>
+                <View
+                  style={[
+                    styles.cardIconCircle,
+                    styles.cardIconLocationActive,
+                  ]}
+                >
+                  <Text style={styles.cardIconEmoji}>📍</Text>
+                </View>
+                <View>
+                  <Text style={styles.cardTitle}>Location Tracking</Text>
+                  <Text style={styles.cardStatusActive}>
+                    Active &amp; Sharing
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.cardRow}>
+                <Text style={styles.rowLabel}>Coordinates</Text>
+                <Text style={styles.rowValue}>37.7722 , -122.4192</Text>
+              </View>
+              <View style={styles.cardRow}>
+                <Text style={styles.rowLabel}>Last Update</Text>
+                <Text style={[styles.rowValue, styles.rowValueStrong]}>
+                  11:00:09
+                </Text>
+              </View>
+              <View style={styles.cardRow}>
+                <Text style={styles.rowLabel}>Accuracy</Text>
+                <Text style={[styles.rowValue, styles.rowValueAccent]}>
+                  ±14 m
+                </Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+
+          {/* GESTURE – ACTIVE */}
+          <View style={[styles.card, styles.gestureCard]}>
+            <View style={styles.cardHeader}>
+              <View
+                style={[
+                  styles.cardIconCircle,
+                  styles.cardIconGestureActive,
+                ]}
+              >
+                <Text style={styles.cardIconEmoji}>⬚</Text>
+              </View>
+              <View>
+                <Text style={styles.cardTitle}>Gesture Detection</Text>
+                <Text style={styles.cardSubActive}>
+                  Triple Tap • high sensitivity
+                </Text>
+              </View>
+            </View>
+            <View style={styles.gestureIndicatorOn} />
+          </View>
+        </>
+      ) : (
+        <>
+          {/* LOCATION – INACTIVE */}
+          <View style={[styles.card, styles.locationCard, styles.cardInactive]}>
+            <View style={styles.cardHeader}>
+              <View
+                style={[
+                  styles.cardIconCircle,
+                  styles.cardIconLocationInactive,
+                ]}
+              >
+                <Text style={styles.cardIconEmoji}>📍</Text>
+              </View>
+              <View>
+                <Text style={styles.cardTitle}>Location Tracking</Text>
+                <Text style={styles.cardStatusInactive}>Inactive</Text>
+              </View>
+            </View>
+
+            <View style={styles.cardRow}>
+              <Text style={styles.rowLabel}>Coordinates</Text>
+              <Text style={[styles.rowValue, styles.rowValueMuted]}>
+                -- , --
+              </Text>
+            </View>
+            <View style={styles.cardRow}>
+              <Text style={styles.rowLabel}>Last Update</Text>
+              <Text style={[styles.rowValue, styles.rowValueMuted]}>—</Text>
+            </View>
+            <View style={styles.cardRow}>
+              <Text style={styles.rowLabel}>Accuracy</Text>
+              <Text style={[styles.rowValue, styles.rowValueMuted]}>—</Text>
+            </View>
+          </View>
+
+          {/* GESTURE – INACTIVE */}
+          <View style={[styles.card, styles.gestureCard, styles.cardInactive]}>
+            <View style={styles.cardHeader}>
+              <View
+                style={[
+                  styles.cardIconCircle,
+                  styles.cardIconGestureInactive,
+                ]}
+              >
+                <Text style={styles.cardIconEmoji}>⬚</Text>
+              </View>
+              <View>
+                <Text style={styles.cardTitle}>Gesture Detection</Text>
+                <Text style={styles.cardSubInactive}>
+                  Triple Tap • high sensitivity
+                </Text>
+              </View>
+            </View>
+            <View style={styles.gestureIndicatorOff} />
+          </View>
+        </>
+      )}
+
+      {/* BOTTOM ACTIONS */}
+      <View style={styles.actions}>
+        <TouchableOpacity
+          style={[styles.actionTile, styles.actionCall]}
+          onPress={handleCall}
+        >
+          <Text style={styles.actionIcon}>📞</Text>
+          <Text style={styles.actionLabel}>Call 112</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.actionTile, styles.actionAlert]}
+          onPress={handleAlertSOS}  
+        >
+          <Text style={styles.actionIcon}>⚠️</Text>
+          <Text style={styles.actionLabel}>Alert</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.actionTile, styles.actionRoute]}
+          onPress={() => navigation.navigate('Route')}
+        >
+          <Text style={styles.actionIcon}>🗺️</Text>
+          <Text style={styles.actionLabel}>Safe Route</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.actionTile, styles.actionContacts]}
+          onPress={() => navigation.navigate('Contacts')}
+        >
+          <Text style={styles.actionIcon}>👥</Text>
+          <Text style={styles.actionLabel}>Contacts</Text>
+        </TouchableOpacity>
+      </View>
+      {/* SOS BOTTOM SHEET */}
+       <Modal
+        transparent
+        animationType="slide"
+        visible={showSOSSheet}
+        onRequestClose={() => setShowSOSSheet(false)}
+      >
+        <View style={styles.overlay}>
+          <View style={styles.sheet}>
+            <Text style={styles.sheetTitle}>🚨 SOS Activated</Text>
+
+            <Text style={styles.sheetText}>
+              Emergency alert has been sent to:
+            </Text>
+
+            <Text style={styles.contact}>• Mom</Text>
+            <Text style={styles.contact}>• Sister</Text>
+            <Text style={styles.contact}>• Local Police</Text>
+
+            {location && (
+              <Text style={styles.locationText}>
+                📍 Location shared:
+                {'\n'}
+                {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
+              </Text>
+            )}
+
+            <TouchableOpacity
+              style={styles.closeBtn}
+              onPress={() => setShowSOSSheet(false)}
+            >
+              <Text style={styles.closeText}>CLOSE</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.actionCard, styles.alertCard]}
+              onPress={handleAlertSOS}  // ← MUST match the function name
+>
+               <Text style={styles.actionLabel}>Alert</Text>
+            </TouchableOpacity>
+
+          </View>
+        </View>
+      </Modal>
+
     </View>
   );
 };
@@ -216,214 +342,306 @@ const DashboardScreen = ({ navigation }) => {
 export default DashboardScreen;
 
 const styles = StyleSheet.create({
-  screen: {
+  app: {
     flex: 1,
     backgroundColor: '#020617',
+    paddingTop: 16,
+    paddingHorizontal: 20,
   },
-  headerBackground: {
-    paddingTop: SPACING.xl,
-    paddingHorizontal: SPACING.lg,
-    paddingBottom: SPACING.lg,
-  },
-  headerBar: {
+
+  /* HEADER */
+  header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: SPACING.lg,
+    alignItems: 'flex-start',
+    marginBottom: 24,
+    marginTop: 40
   },
-  appName: {
-    color: '#e5e7eb',
-    fontSize: FONT.subtitle,
-    fontWeight: '700',
+  headerLeft: {
+    flexDirection: 'column',
   },
-  tagline: {
-    color: '#6b7280',
-    fontSize: FONT.caption,
-    marginTop: 2,
-  },
-  headerIcons: {
+  headerRight: {
     flexDirection: 'row',
-    gap: 10,
-  },
-  headerIconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: '#020617',
-    justifyContent: 'center',
     alignItems: 'center',
   },
-  headerIcon: {
+  iconBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: '#020617',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.45,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 8,
+    marginLeft: 8,
+  },
+  iconLabel: {
+    color: '#9ca3af',
+    fontSize: 18,
+    
+  },
+
+  brand: {},
+  brandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  brandLogoCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#020617',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  brandLogoImg: {
     width: 20,
     height: 20,
-    tintColor: '#9ca3af',
+    resizeMode: 'contain',
+  },
+  brandTitle: {
+    fontSize: 24,
+    color: '#e5e7eb',
+    fontWeight: '700',
+  },
+  brandSubtitle: {
+    marginTop: 2,
+    fontSize: 13,
+    color: '#6b7280',
   },
 
-  shieldWrapper: {
+  /* SHIELD */
+  shieldSection: {
     alignItems: 'center',
-    marginTop: SPACING.md,
+    marginBottom: 50,
   },
   shieldOuter: {
-    width: 260,
-    height: 260,
-    borderRadius: 130,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  shieldMiddle: {
     width: 220,
     height: 220,
-    borderRadius: 110,
-    backgroundColor: '#0f172a',
-    justifyContent: 'center',
+    borderRadius: 130,
     alignItems: 'center',
+    justifyContent: 'center',
+  },
+  shieldMiddle: {
+    width: 188,
+    height: 188,
+    borderRadius: 94,
+    backgroundColor: 'rgba(4, 29, 60, 0.9)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   shieldInner: {
-    width: 170,
-    height: 170,
-    borderRadius: 85,
-    backgroundColor: '#0ea5e9',
-    justifyContent: 'center',
+    width: 165,
+    height: 165,
+    borderRadius: 82.5,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  shieldIcon: {
+  shieldInnerInactive: {
+    backgroundColor: 'rgba(85, 88, 92, 0.45)',
+    borderWidth: 1,
+    borderColor: 'rgba(148,163,184,0.35)',
+  },
+   shieldOuterActive: {
+    backgroundColor: '#05485d'
+  },
+  shieldInnerActive: {
+    backgroundColor: '#dfd80df7',
+  },
+  shieldOuterInactive: {
+    backgroundColor: 'rgba(34, 34, 30, 0.69)',
+  },
+  shieldImg: {
     width: 80,
     height: 80,
-    tintColor: 'white',
+    resizeMode: 'contain',
+    borderRadius: 20,
   },
   guardianLabel: {
-    marginTop: SPACING.md,
+    marginTop: 16,
+    letterSpacing: 4,
+    fontSize: 11,
+  },
+  guardianLabelInactive: {
+    color: '#9ca3af',
+  },
+  guardianLabelActive: {
     color: '#38bdf8',
-    letterSpacing: 3,
-    fontWeight: '600',
   },
-  guardianSubLabel: {
-    marginTop: 4,
+  guardianSub: {
+    marginTop: 6,
+    fontSize: 13,
     color: '#6b7280',
-    fontSize: FONT.caption,
   },
 
-  content: {
-    flex: 1,
-    paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.md,
-  },
-
-  locationCard: {
+  /* CARDS */
+  card: {
     borderRadius: 24,
-    paddingVertical: SPACING.md,
-    marginBottom: SPACING.md,
+    paddingVertical: 16,
+    paddingHorizontal: 18,
+    backgroundColor: '#020617',
+    shadowColor: '#000',
+    shadowOpacity: 0.65,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 18 },
+    elevation: 10,
   },
-  locationHeaderRow: {
+  locationCard: {
+    marginBottom: 16,
+  },
+  cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: SPACING.md,
+    marginBottom: 12,
   },
-  locationIconCircle: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: '#022c22',
-    justifyContent: 'center',
+  cardIconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
-    marginRight: SPACING.md,
+    justifyContent: 'center',
+    marginRight: 12,
   },
-  locationIconText: {
-    fontSize: 20,
+  cardIconLocationActive: {
+    backgroundColor: 'rgba(22,163,74,0.25)',
   },
-  locationTitle: {
-    color: '#e5e7eb',
-    fontSize: FONT.body,
+  cardIconGestureActive: {
+    backgroundColor: 'rgba(56,189,248,0.25)',
+  },
+  cardIconLocationInactive: {
+    backgroundColor: 'rgba(15,23,42,0.9)',
+  },
+  cardIconGestureInactive: {
+    backgroundColor: 'rgba(15,23,42,0.9)',
+  },
+  cardIconEmoji: {
+    fontSize: 22,
+  },
+  cardTitle: {
+    fontSize: 15,
     fontWeight: '600',
+    color: '#e5e7eb',
   },
-  locationStatus: {
+  cardStatusActive: {
+    fontSize: 12,
     color: '#22c55e',
-    fontSize: FONT.caption,
     marginTop: 2,
   },
-  locationDetailRow: {
+  cardStatusInactive: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginTop: 2,
+  },
+  cardSubActive: {
+    fontSize: 12,
+    color: '#9ca3af',
+    marginTop: 2,
+  },
+  cardSubInactive: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginTop: 2,
+  },
+  cardRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 6,
   },
-  detailLabel: {
+  rowLabel: {
+    fontSize: 13,
     color: '#6b7280',
-    fontSize: FONT.caption,
   },
-  detailValue: {
+  rowValue: {
+    fontSize: 13,
     color: '#e5e7eb',
-    fontSize: FONT.caption,
   },
-  detailAccent: {
+  rowValueStrong: {
+    fontWeight: '600',
+  },
+  rowValueAccent: {
     color: '#22c55e',
-    fontSize: FONT.caption,
+  },
+  rowValueMuted: {
+    color: '#4b5563',
+  },
+  cardInactive: {
+    opacity: 0.72,
   },
 
   gestureCard: {
-    borderRadius: 24,
-    paddingVertical: SPACING.md,
-    marginBottom: SPACING.lg,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 24,
   },
-  gestureLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  gestureIconCircle: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: '#0f172a',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: SPACING.md,
-  },
-  gestureSubtitle: {
-    color: '#9ca3af',
-    fontSize: FONT.caption,
-    marginTop: 2,
-  },
-  gestureDot: {
+  gestureIndicatorOn: {
     width: 14,
     height: 14,
     borderRadius: 7,
     backgroundColor: '#22c55e',
   },
+  gestureIndicatorOff: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#4b5563',
+  },
 
-  bottomRow: {
+  /* ACTIONS */
+  actions: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: SPACING.xl,
+    marginBottom: 24,
   },
   actionTile: {
     flex: 1,
-    height: 82,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderRadius: 18,
+    paddingVertical: 10,
+    paddingHorizontal: 4,
     marginHorizontal: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   actionIcon: {
     fontSize: 20,
     marginBottom: 4,
   },
-  actionText: {
-    color: '#e5e7eb',
-    fontSize: FONT.caption,
+  actionLabel: {
+    fontSize: 12,
     fontWeight: '600',
+    color: '#e5e7eb',
   },
-  callTile: {
+  actionCall: {
     backgroundColor: '#7f1d1d',
   },
-  alertTile: {
+  actionAlert: {
     backgroundColor: '#78350f',
   },
-  routeTile: {
+  actionRoute: {
     backgroundColor: '#0f172a',
   },
-  contactsTile: {
+  actionContacts: {
     backgroundColor: '#1e1b4b',
   },
-});
+  // SOS BOTTOM SHEET
+  sosSheet: { 
+    position: 'absolute', 
+    color : 'white',
+    bottom: 0, 
+    width: '100%', 
+    backgroundColor: 'white', 
+    padding: 20, 
+    alignItems: 'center', 
+    zIndex: 1000,
+  },
+  sosText: { 
+    color: 'white', 
+    fontSize: 18, 
+    fontWeight: 'bold' 
+  },
+},
+);

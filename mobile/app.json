@@ -23,10 +23,8 @@
       }
     },
     "android": {
-      "package": "com.yourname.guardianx",
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#050811"
+      "package": "com.yourname.guardianx"
+      
       },
       "permissions": [
         "ACCESS_COARSE_LOCATION",
@@ -38,12 +36,9 @@
         }
       }
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
     "plugins": [
       "expo-maps",
       "expo-location"
     ]
   }
-}
+

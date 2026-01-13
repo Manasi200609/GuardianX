@@ -72,3 +72,20 @@ PUT http://localhost:5000/api/users/guardian-mode/69636d9aeaa8ecebc4a1b948
 Content-Type: application/json
 
 {}
+### Update guardian mode to true for test user
+PUT http://10.227.9.205:5000/api/users/guardian-mode/69636d9aeaa8ecebc4a1b948
+Content-Type: application/json
+
+{
+  "active": true
+}
+### Trigger SOS for test user
+POST http://10.227.9.205:5000/api/users/sos/69636d9aeaa8ecebc4a1b948
+
+### Update guardian mode to true for another user
+PUT http://10.227.9.205:5000/api/users/guardian-mode/69645d814e5f148691e02aa5
+Content-Type: application/json
+
+{
+  "active": true
+}

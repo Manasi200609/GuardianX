@@ -5,7 +5,7 @@ const router = express.Router();
 const {
   registerUser,
   loginUser,
-  enableGuardianMode,
+  setGuardianMode, 
   enableGuardianModeByEmail,
   triggerSOS,
   triggerSOSByEmail,

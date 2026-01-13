@@ -11,11 +11,10 @@ import {
 } from 'react-native';
 import * as Location from 'expo-location';
 import { Accelerometer } from 'expo-sensors';
-import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import { GuardianContext } from '../context/GuardianContext';
+import { triggerSOS, API_BASE_URL } from '../services/api';
 
-const API_BASE_URL = 'http://192.168.1.6:5000/api/users';
 
 const DashboardScreen = ({ navigation: propNavigation, route }) => {
   const navigation = useNavigation();
@@ -86,28 +85,38 @@ const DashboardScreen = ({ navigation: propNavigation, route }) => {
   };
 
   const handleAlertSOS = async () => {
-    try {
-      if (!user || !user._id) {
-        console.log('Dashboard: user missing in route.params', route?.params);
-        Alert.alert('Error', 'User information is missing for SOS.');
-        return;
-      }
-
-      const url = `${API_BASE_URL}/${user._id}/sos`;
-      const lat = location?.latitude;
-      const lng = location?.longitude;
-
-      console.log('SOS URL =', url, 'lat =', lat, 'lng =', lng);
-
-      const res = await axios.post(url, { lat, lng });
-      console.log('SOS response:', res.data);
-
-      setShowSOSSheet(true);
-    } catch (err) {
-      console.error('SOS error:', err.response?.data || err.message);
-      Alert.alert('Error', 'Server error sending SOS.');
+  try {
+    if (!user || !user._id) {
+      console.log('Dashboard: user missing in route.params', route?.params);
+      Alert.alert('Error', 'User information is missing for SOS.');
+      return;
     }
-  };
+
+    const lat = location?.latitude;
+    const lng = location?.longitude;
+
+    // Log to verify the exact URL shape indirectly
+    console.log(
+      'Dashboard SOS call → base =',
+      API_BASE_URL,
+      'userId =',
+      user._id,
+      'lat =',
+      lat,
+      'lng =',
+      lng
+    );
+
+    // Use the shared helper: POST /api/users/:id/sos
+    const res = await triggerSOS(user._id, { lat, lng });
+    console.log('SOS response:', res.data);
+
+    setShowSOSSheet(true);
+  } catch (err) {
+    console.error('SOS error:', err.response?.data || err.message);
+    Alert.alert('Error', 'Server error sending SOS.');
+  }
+};
 
   const startLocationTracking = async () => {
     try {

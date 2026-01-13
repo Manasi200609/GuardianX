@@ -1,7 +1,8 @@
 // src/services/api.js
 import axios from 'axios';
 
-const API_BASE_URL = 'http://10.227.9.205:5000/api/users'; // your PC IP
+// Use the IP that works in your REST client / browser
+const API_BASE_URL = 'http://10.227.9.205:5000/api/users';
 
 console.log('API_BASE_URL at runtime =', API_BASE_URL);
 
@@ -39,8 +40,10 @@ export const toggleGuardianMode = (userId, data) =>
 
 /* ================= SOS ================= */
 
+// Matches router.post('/:id/sos', ...) mounted at /api/users
 export const triggerSOS = (userId, data) =>
-  api.post(`/sos/${userId}`, data);
+  api.post(`/${userId}/sos`, data);
+
 
 /* ============ EMERGENCY CONTACTS ============ */
 

@@ -1,20 +1,21 @@
+// routes/sosRoutes.js
 const express = require('express');
-app.use(express.json());
-const User = require('../models/User');       // adjust path if needed
-const sendSMS = require('../utils/smsService');
 const router = express.Router();
 
-// POST /api/users/:userId/sos
-router.post('/sos/:id', async (req, res) => {
-  try {
-    console.log('setGuardianMode params:', req.params);
-    console.log('setGuardianMode body:', req.body);
+const User = require('../models/User');
+const sendSMS = require('../utils/smsService');
 
-    const { userId } = req.params;
+// POST /api/users/:id/sos
+router.post('/:id/sos', async (req, res) => {
+  try {
+    console.log('SOS params:', req.params);
+    console.log('SOS body:', req.body);
+
+    const { id } = req.params;
     const { lat, lng } = req.body;
 
-    const user = await User.findById(userId);
-    if (!user || !user.emergencyContacts?.length) {
+    const user = await User.findById(id);
+    if (!user || !user.emergencyContacts || !user.emergencyContacts.length) {
       return res
         .status(400)
         .json({ message: 'No emergency contacts configured' });
@@ -30,10 +31,10 @@ router.post('/sos/:id', async (req, res) => {
       await sendSMS(c.phone, message);
     }
 
-    res.json({ message: 'SOS sent to contacts' });
+    return res.json({ message: 'SOS sent to contacts' });
   } catch (err) {
     console.error('SOS error', err);
-    res.status(500).json({ message: 'Server error sending SOS' });
+    return res.status(500).json({ message: 'Server error sending SOS' });
   }
 });
 

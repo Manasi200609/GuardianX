@@ -1,28 +1,35 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
+
 
 const {
   registerUser,
-  loginUser ,
+  loginUser,
   enableGuardianMode,
-   triggerSOS ,
-   updateContacts,
+  enableGuardianModeByEmail,
+  triggerSOS,
+  triggerSOSByEmail,
+  updateContacts,
+  updateContactsByEmail,
   updateGesture,
-} = require("../controllers/userController");
+  getContactsById,           // ← add this
+} = require('../controllers/userController');
 
-// Register user
-router.post("/register", registerUser);
-router.post("/login", loginUser );
 
-// Toggle Guardian Mode
-router.put("/guardian-mode/:id", enableGuardianMode);
+router.post('/register', registerUser);
+router.post('/login', loginUser);
 
-router.post("/sos/:id", triggerSOS);
+router.put('/guardian-mode/:id', setGuardianMode);
+router.put('/guardian-mode-by-email/:email', enableGuardianModeByEmail);
 
-// new
+router.post('/sos/:id', triggerSOS);
+router.post('/sos-by-email/:email', triggerSOSByEmail);
+
 router.put('/contacts/:id', updateContacts);
+router.get('/contacts/:id', getContactsById);       // ← new GET route
+
+router.put('/contacts-by-email/:email', updateContactsByEmail);
+
 router.put('/gesture/:id', updateGesture);
-
-
 
 module.exports = router;

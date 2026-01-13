@@ -19,6 +19,8 @@ const SignupScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
 
   const handleSignup = async () => {
+    console.log('Signup button pressed');
+
     if (!name || !email || !password) {
       Alert.alert('Missing fields', 'Please fill all fields.');
       return;

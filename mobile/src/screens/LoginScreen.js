@@ -1,5 +1,4 @@
-// src/screens/LoginScreen.js
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import {
   View,
   Text,
@@ -9,19 +8,39 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
+import { GuardianContext } from '../context/GuardianContext';
+import { loginUser } from '../services/api';
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const { setUser } = useContext(GuardianContext);
 
   const handleGoogle = () => {
-    // TODO: Google sign-in
+    // not implemented for now
   };
 
-  const handleSignIn = () => {
-    // TODO: call your login API, then:
-    navigation.replace('Dashboard');
+  const handleSignIn = async () => {
+    try {
+      if (!email || !password) {
+        Alert.alert('Missing fields', 'Please enter email and password.');
+        return;
+      }
+
+      // loginUser should return the user object from backend (with _id)
+      const user = await loginUser({ email, password });
+      console.log('Login user =', user);          // debug: confirm _id is present
+
+      setUser(user);                              // store in context if you use it
+
+      // IMPORTANT: pass user to Dashboard so SOS can use user._id
+      navigation.replace('Dashboard', { user });
+    } catch (error) {
+      console.log('Login error:', error.response?.data || error.message);
+      Alert.alert('Login failed', 'Check your email and password.');
+    }
   };
 
   const handleSignup = () => {
@@ -34,8 +53,7 @@ const LoginScreen = ({ navigation }) => {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={styles.card}>
-        {/* Logo circle */}
-        <View style={styles.logoCircle}>
+        <View className="logoCircle" style={styles.logoCircle}>
           <Image
             source={require('../../assets/guardianx-logo.png.jpeg')}
             style={styles.logoImg}
@@ -45,7 +63,6 @@ const LoginScreen = ({ navigation }) => {
         <Text style={styles.title}>Welcome to GuardianX</Text>
         <Text style={styles.subtitle}>Sign in to continue</Text>
 
-        {/* Google button */}
         <TouchableOpacity style={styles.googleBtn} onPress={handleGoogle}>
           <View style={styles.googleIconBox}>
             <Text style={styles.googleIconText}>G</Text>
@@ -53,14 +70,12 @@ const LoginScreen = ({ navigation }) => {
           <Text style={styles.googleBtnText}>Continue with Google</Text>
         </TouchableOpacity>
 
-        {/* Divider */}
-        <View style={styles.divider}>
+        <View className="divider" style={styles.divider}>
           <View style={styles.dividerLine} />
           <Text style={styles.dividerText}>OR</Text>
           <View style={styles.dividerLine} />
         </View>
 
-        {/* Email */}
         <Text style={styles.label}>Email</Text>
         <View style={styles.inputWrapper}>
           <Text style={styles.inputIcon}>✉️</Text>
@@ -75,7 +90,6 @@ const LoginScreen = ({ navigation }) => {
           />
         </View>
 
-        {/* Password */}
         <Text style={styles.label}>Password</Text>
         <View style={styles.inputWrapper}>
           <Text style={styles.inputIcon}>🔒</Text>
@@ -89,12 +103,10 @@ const LoginScreen = ({ navigation }) => {
           />
         </View>
 
-        {/* Sign in */}
         <TouchableOpacity style={styles.primaryBtn} onPress={handleSignIn}>
           <Text style={styles.primaryBtnText}>Sign in</Text>
         </TouchableOpacity>
 
-        {/* Extra links */}
         <TouchableOpacity style={styles.linkBtn}>
           <Text style={styles.linkBtnText}>Forgot password?</Text>
         </TouchableOpacity>
@@ -115,7 +127,7 @@ export default LoginScreen;
 const styles = StyleSheet.create({
   page: {
     flex: 1,
-    backgroundColor: '#e5f0ff',
+    backgroundColor: '#020617',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
@@ -143,7 +155,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -35,
     left: '50%',
-    marginLeft: -35,
+    marginLeft: -16,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#0f172a',
@@ -172,8 +184,6 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     marginBottom: 20,
   },
-
-  // Google button
   googleBtn: {
     width: '100%',
     borderRadius: 999,
@@ -206,8 +216,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#111827',
   },
-
-  // Divider
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -224,8 +232,6 @@ const styles = StyleSheet.create({
     color: '#9ca3af',
     letterSpacing: 2,
   },
-
-  // Inputs
   label: {
     fontSize: 12,
     color: '#4b5563',
@@ -251,8 +257,6 @@ const styles = StyleSheet.create({
     color: '#111827',
     paddingVertical: 10,
   },
-
-  // Primary button
   primaryBtn: {
     width: '100%',
     borderRadius: 999,
@@ -266,8 +270,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
   },
-
-  // Links
   linkBtn: {
     marginTop: 10,
     alignItems: 'center',

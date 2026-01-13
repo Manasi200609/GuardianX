@@ -1,5 +1,5 @@
 // src/screens/ContactsScreen.js
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,10 +8,10 @@ import {
   Alert,
   FlatList,
 } from 'react-native';
-import { COLORS, SPACING, FONT } from '../utils/theme';
 import PrimaryButton from '../components/PrimaryButton';
-import { saveContacts } from '../services/api';
+import { saveContacts, getContacts } from '../services/api';
 import { GuardianContext } from '../context/GuardianContext';
+import { SPACING, FONT, COLORS } from '../utils/theme';
 
 const ContactsScreen = () => {
   const { user } = useContext(GuardianContext);
@@ -20,11 +20,42 @@ const ContactsScreen = () => {
   const [phone, setPhone] = useState('');
   const [contacts, setContacts] = useState([]);
 
+  // Load saved contacts from backend when screen mounts
+  useEffect(() => {
+    const loadContacts = async () => {
+      try {
+        if (!user?._id) return;
+        const res = await getContacts(user._id);
+        const backendContacts = res.data.contacts || [];
+        setContacts(
+          backendContacts.map((c, idx) => ({
+            id: `${idx}-${c.phone}`,
+            name: c.name,
+            phone: c.phone,
+          }))
+        );
+      } catch (err) {
+        console.log(
+          'Load contacts error:',
+          err.response?.data || err.message
+        );
+      }
+    };
+
+    loadContacts();
+  }, [user]);
+
   const addLocalContact = () => {
+    if (contacts.length >= 5) {
+      Alert.alert('Limit reached', 'You can add at most 5 emergency contacts.');
+      return;
+    }
+
     if (!name || !phone) {
       Alert.alert('Missing fields', 'Please enter name and phone number.');
       return;
     }
+
     const newContact = { id: Date.now().toString(), name, phone };
     setContacts(prev => [...prev, newContact]);
     setName('');
@@ -43,7 +74,7 @@ const ContactsScreen = () => {
 
     try {
       await saveContacts(user._id, {
-        emergencyContacts: contacts,
+        contacts: contacts.map(c => ({ name: c.name, phone: c.phone })),
       });
       Alert.alert('Saved', 'Emergency contacts stored securely.');
     } catch (error) {
@@ -63,10 +94,12 @@ const ContactsScreen = () => {
       </Text>
 
       <Text style={styles.label}>Name</Text>
+      <Text style={styles.inputLabel} />
+
       <TextInput
         style={styles.input}
         placeholder="Contact name"
-        placeholderTextColor={COLORS.textSecondary}
+        placeholderTextColor="#AAAAAA"
         value={name}
         onChangeText={setName}
       />
@@ -75,7 +108,7 @@ const ContactsScreen = () => {
       <TextInput
         style={styles.input}
         placeholder="Phone number"
-        placeholderTextColor={COLORS.textSecondary}
+        placeholderTextColor="#AAAAAA"
         value={phone}
         onChangeText={setPhone}
         keyboardType="phone-pad"
@@ -112,53 +145,53 @@ export default ContactsScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: '#121212',
     padding: SPACING.xl,
-    color : COLORS.textPrimary,
   },
   title: {
-    color: COLORS.textPrimary,
+    marginTop: SPACING.xl,
+    color: '#FFFFFF',
     fontSize: FONT.subtitle,
     fontWeight: '700',
     marginBottom: SPACING.sm,
   },
   subtitle: {
-    color: COLORS.textSecondary,
+    color: '#FFFFFF',
     fontSize: FONT.body,
     marginBottom: SPACING.lg,
   },
   label: {
-    color: COLORS.textPrimary,
+    marginTop: SPACING.md,
+    color: '#FFFFFF',
     fontSize: FONT.caption,
     marginBottom: 4,
   },
   input: {
-    backgroundColor: COLORS.surface,
-    color: COLORS.textPrimary,
+    backgroundColor: '#E0E0E0',
+    color: '#000000',
     borderRadius: 10,
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.sm,
     marginBottom: SPACING.md,
   },
   contactItem: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: '#E0E0E0',
     borderRadius: 10,
     padding: SPACING.md,
     marginBottom: SPACING.sm,
   },
   contactName: {
-    color: COLORS.textPrimary,
+    color: '#000000',
     fontSize: FONT.body,
     fontWeight: '600',
-    
   },
   contactPhone: {
-    color: COLORS.textSecondary,
+    color: '#333333',
     fontSize: FONT.caption,
     marginTop: 2,
   },
   emptyText: {
-    color: COLORS.textSecondary,
+    color: '#FFFFFF',
     textAlign: 'center',
     marginTop: SPACING.md,
   },

@@ -1,0 +1,74 @@
+### Test server
+GET http://localhost:5000/test
+
+### Register new user
+POST http://localhost:5000/api/users/register
+Content-Type: application/json
+
+{
+  "name": "Test User",
+  "email": "testuser1@example.com",
+  "password": "12345678"
+}
+
+### emergency contacts
+PUT http://localhost:5000/api/users/contacts/69636d9aeaa8ecebc4a1b948
+Content-Type: application/json
+
+{
+  "contacts": [
+    { "name": "Mom", "phone": "+911234567890" },
+    { "name": "Friend", "phone": "+911112223334" }
+  ]
+}
+
+### Update contacts (replace USER_ID)
+PUT http://localhost:5000/api/users/contacts/USER_ID
+Content-Type: application/json
+
+{
+  "contacts": [
+    { "name": "Mom", "phone": "+911234567890" },
+    { "name": "Friend", "phone": "+911112223334" }
+  ]
+}
+
+### Trigger SOS (replace USER_ID)
+POST http://localhost:5000/api/users/sos/USER_ID
+Content-Type: application/json
+
+{
+  "lat": 18.627,
+  "lng": 73.807
+}
+### Trigger SOS for test user
+POST http://localhost:5000/api/users/sos/69636d9aeaa8ecebc4a1b948
+Content-Type: application/json
+
+{
+  "lat": 18.627,
+  "lng": 73.807
+}
+
+### Update guardian mode (replace USER_ID)
+PUT http://localhost:5000/api/users/guardian-mode/69636d9aeaa8ecebc4a1b948
+Content-Type: application/json
+
+{
+  "guardianMode": true
+}
+
+### Trigger SOS for test user
+POST http://localhost:5000/api/users/sos/69636d9aeaa8ecebc4a1b948
+Content-Type: application/json
+
+{
+  "lat": 18.627,
+  "lng": 73.807
+}
+
+### Update guardian mode to false for test user
+PUT http://localhost:5000/api/users/guardian-mode/69636d9aeaa8ecebc4a1b948
+Content-Type: application/json
+
+{}

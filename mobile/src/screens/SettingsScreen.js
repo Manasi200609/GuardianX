@@ -5,6 +5,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  Image,
   Switch,
   ScrollView,
 } from 'react-native';
@@ -14,27 +15,31 @@ const SettingsScreen = ({ navigation }) => {
   const [autoNightMode, setAutoNightMode] = useState(false);
 
   return (
-    <View style={styles.page}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
+         <View style={styles.page}>
+  <ScrollView
+    contentContainerStyle={styles.scrollContent}
+    showsVerticalScrollIndicator={false}
+  >
+    {/* Header */}
+    <View style={styles.header}>
+      <TouchableOpacity
+        style={styles.backBtn}
+        onPress={() => navigation.goBack()}
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backBtn}
-            onPress={() => navigation.goBack()}
-          >
-            <Text style={styles.backIcon}>←</Text>
-          </TouchableOpacity>
+        <Image
+          source={require('../../assets/arrow.png')}
+          style={styles.backIcon}
+        />
+      </TouchableOpacity>
 
-          <View>
-            <Text style={styles.headerTitle}>Settings</Text>
-            <Text style={styles.headerSubtitle}>
-              Customize your safety preferences
-            </Text>
-          </View>
-        </View>
+      <View>
+        <Text style={styles.headerTitle}>Settings</Text>
+        <Text style={styles.headerSubtitle}>
+          Customize your safety preferences
+        </Text>
+      </View>
+    </View>
+
 
         {/* Profile card */}
         <View style={[styles.card, styles.profileCard]}>
@@ -95,6 +100,7 @@ const SettingsScreen = ({ navigation }) => {
                 trackColor={{ false: '#374151', true: '#22c55e' }}
               />
             </View>
+
           </View>
         </View>
 
@@ -122,7 +128,7 @@ const SettingsScreen = ({ navigation }) => {
 
           <TouchableOpacity
             style={[styles.card, styles.rowButton]}
-            onPress={() => navigation.navigate('Gesture')}
+            onPress={() => navigation.navigate('GestureSelection')}
           >
             <View style={styles.rowLeft}>
               <View style={[styles.pill, styles.pillGesture]}>
@@ -167,6 +173,9 @@ const SettingsScreen = ({ navigation }) => {
         <Text style={styles.footer}>
           GuardianX Prototype v1.0 • Hackathon Demo
         </Text>
+        
+
+        
       </ScrollView>
     </View>
   );
@@ -178,24 +187,22 @@ const styles = StyleSheet.create({
   page: {
     flex: 1,
     backgroundColor: '#020617',
-    marginTop: 40,
   },
-  scrollContent: {
-    paddingHorizontal: 18,
-    paddingTop: 20,
-    paddingBottom: 28,
+  scrollContent: { paddingTop: 24,
+  paddingHorizontal: 18,
+  paddingBottom: 32, paddingHorizontal: 18,
+    paddingBottom: 32,
   },
 
   /* Header */
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 18,
-  },
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginBottom: 24,
+},
   backBtn: {
-    width: 36,
-    height: 36,
+    width: 40,
+    height: 40,
     borderRadius: 14,
     backgroundColor: '#020617',
     alignItems: 'center',
@@ -207,16 +214,18 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   backIcon: {
-    color: '#e5e7eb',
-    fontSize: 18,
-  },
+  width: 20,
+  height: 20,
+  resizeMode: 'contain',
+  marginTop: 0,          // remove big top margin
+},
   headerTitle: {
-    fontSize: 20,
-    color: '#e5e7eb',
-    fontWeight: '700',
-    marginBottom: 2,
-    marginTop: 40,
-  },
+  fontSize: 20,
+  color: '#e5e7eb',
+  fontWeight: '700',
+  marginBottom: 2,
+  marginTop: 0,          // remove top margin (was 40)
+},
   headerSubtitle: {
     fontSize: 12,
     color: '#6b7280',

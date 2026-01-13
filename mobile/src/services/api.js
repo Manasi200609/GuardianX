@@ -1,6 +1,9 @@
+// src/services/api.js
 import axios from 'axios';
 
-const API_BASE_URL = 'http://10.93.108.205:5000/api/users'; // adjust IP
+const API_BASE_URL = 'http://10.227.9.205:5000/api/users'; // your PC IP
+
+console.log('API_BASE_URL at runtime =', API_BASE_URL);
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -12,26 +15,23 @@ const api = axios.create({
 /* ============== AUTH ================= */
 
 export async function signupUser({ name, email, password }) {
-  const response = await axios.post(`${API_BASE_URL}/register`, {
+  console.log('Calling signupUser with', name, email);
+  const response = await api.post('/register', {
     name,
     email,
     password,
   });
-  // expect your controller to send { success: true, user, message }
-  return response.data;
+  return response.data; // { success, user, ... }
 }
 
-// You don’t have a login route yet in this router,
-// so either create one in backend or temporarily skip loginUser
-// export const loginUser = (data) => api.post('/login', data);
-
 export async function loginUser({ email, password }) {
-  const response = await axios.post(`${API_BASE_URL}/login`, {
+  const response = await api.post('/login', {
     email,
     password,
   });
-  return response.data;
+  return response.data; // user document
 }
+
 /* ============ GUARDIAN MODE ============ */
 
 export const toggleGuardianMode = (userId, data) =>
@@ -44,10 +44,13 @@ export const triggerSOS = (userId, data) =>
 
 /* ============ EMERGENCY CONTACTS ============ */
 
-export const saveContacts = (userId, data) =>
-  api.put(`/contacts/${userId}`, data); // { emergencyContacts: [...] }
+export const saveContacts = (userId, payload) =>
+  api.put(`/contacts/${userId}`, payload);
+
+export const getContacts = userId =>
+  api.get(`/contacts/${userId}`);
 
 /* ============== GESTURES ================= */
 
 export const saveGesture = (userId, data) =>
-  api.put(`/gesture/${userId}`, data); // { gesturePattern: '...' }
+  api.put(`/gesture/${userId}`, data);

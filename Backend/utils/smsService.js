@@ -4,7 +4,8 @@ const sendSMS = async (to, message) => {
   // Hackathon safe fallback
   if (
     !process.env.TWILIO_ACCOUNT_SID ||
-    process.env.TWILIO_ACCOUNT_SID === "your_account_sid"
+    !process.env.TWILIO_AUTH_TOKEN ||
+    !process.env.TWILIO_PHONE_NUMBER
   ) {
     console.log("📩 SMS SIMULATION");
     console.log("To:", to);

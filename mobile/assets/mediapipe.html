@@ -2,60 +2,270 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <title>MediaPipe Gesture</title>
-
+  <title>MediaPipe Gesture Detection</title>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
 
   <style>
-    body {
+    * {
       margin: 0;
-      background: black;
+      padding: 0;
+      box-sizing: border-box;
     }
-    video {
-      transform: scaleX(-1);
+    body {
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      position: relative;
       width: 100%;
       height: 100%;
+      overflow: hidden;
+    }
+    video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1);
+    }
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      transform: scaleX(-1);
+    }
+    .ui-overlay {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      color: white;
+      z-index: 100;
+      text-align: center;
+    }
+    .gesture-display {
+      font-size: 32px;
+      font-weight: bold;
+      color: #1de9b6;
+      margin: 10px 0;
+      min-height: 40px;
+    }
+    .confidence {
+      font-size: 18px;
+      color: #81c784;
+      margin: 5px 0;
+    }
+    .hold-timer {
+      font-size: 48px;
+      font-weight: bold;
+      color: #ff6b6b;
+      margin: 10px 0;
     }
   </style>
 </head>
 
 <body>
-  <video id="video" autoplay></video>
+  <div class="container">
+    <video id="video" playsinline></video>
+    <canvas id="canvas"></canvas>
+    <div class="ui-overlay">
+      <div class="gesture-display" id="gestureDisplay">Initializing...</div>
+      <div class="confidence" id="confidence">Confidence: 0%</div>
+      <div class="hold-timer" id="holdTimer"></div>
+    </div>
+  </div>
 
   <script>
-    const videoElement = document.getElementById("video");
+    const videoElement = document.getElementById('video');
+    const canvasElement = document.getElementById('canvas');
+    const canvasCtx = canvasElement.getContext('2d');
+    const gestureDisplay = document.getElementById('gestureDisplay');
+    const confidenceDisplay = document.getElementById('confidence');
+    const holdTimerDisplay = document.getElementById('holdTimer');
+
+    let fistStartTime = null;
+    const FIST_HOLD_DURATION = 3000; // 3 seconds
+
+    // Initialize canvas size
+    function setupCanvas() {
+      canvasElement.width = videoElement.videoWidth || 640;
+      canvasElement.height = videoElement.videoHeight || 480;
+    }
 
     const hands = new Hands({
-      locateFile: file =>
-        `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+      locateFile: (file) =>
+        `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
     });
 
     hands.setOptions({
       maxNumHands: 1,
       modelComplexity: 1,
       minDetectionConfidence: 0.7,
-      minTrackingConfidence: 0.7,
+      minTrackingConfidence: 0.5,
     });
 
-    hands.onResults(results => {
-      if (results.multiHandLandmarks) {
-        // 👋 SIMPLE GESTURE LOGIC (SIMULATED)
-        window.ReactNativeWebView.postMessage(
-          JSON.stringify({ gesture: "HAND_DETECTED" })
+    // Detect gesture from landmarks
+    function detectGesture(landmarks) {
+      if (!landmarks || landmarks.length < 21) return null;
+
+      const palmBase = landmarks[0];
+      const thumbTip = landmarks[4];
+      const indexTip = landmarks[8];
+      const middleTip = landmarks[12];
+      const ringTip = landmarks[16];
+      const pinkyTip = landmarks[20];
+
+      const distance = (p1, p2) => {
+        return Math.sqrt(
+          Math.pow(p1.x - p2.x, 2) +
+          Math.pow(p1.y - p2.y, 2) +
+          Math.pow(p1.z - p2.z, 2)
         );
+      };
+
+      const thumbDist = distance(thumbTip, palmBase);
+      const indexDist = distance(indexTip, palmBase);
+      const middleDist = distance(middleTip, palmBase);
+      const ringDist = distance(ringTip, palmBase);
+      const pinkyDist = distance(pinkyTip, palmBase);
+
+      // Clenched Fist Detection
+      const FIST_THRESHOLD = 0.1;
+      const isFist =
+        thumbDist < FIST_THRESHOLD &&
+        indexDist < FIST_THRESHOLD &&
+        middleDist < FIST_THRESHOLD &&
+        ringDist < FIST_THRESHOLD &&
+        pinkyDist < FIST_THRESHOLD;
+
+      if (isFist) return 'fist';
+
+      // Open Palm Detection
+      const OPEN_THRESHOLD = 0.2;
+      const isOpen =
+        thumbDist > OPEN_THRESHOLD &&
+        indexDist > OPEN_THRESHOLD &&
+        middleDist > OPEN_THRESHOLD &&
+        ringDist > OPEN_THRESHOLD &&
+        pinkyDist > OPEN_THRESHOLD;
+
+      if (isOpen) return 'open_palm';
+
+      return 'unknown';
+    }
+
+    hands.onResults((results) => {
+      setupCanvas();
+      canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+      if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+        const landmarks = results.multiHandLandmarks[0];
+        const gesture = detectGesture(landmarks);
+
+        if (gesture) {
+          // Update gesture display
+          if (gesture === 'fist') {
+            gestureDisplay.textContent = '👊 FIST DETECTED';
+            gestureDisplay.style.color = '#ff6b6b';
+
+            // Start or continue fist timer
+            const now = Date.now();
+            if (!fistStartTime) {
+              fistStartTime = now;
+            }
+
+            const elapsed = now - fistStartTime;
+            const remaining = Math.max(0, FIST_HOLD_DURATION - elapsed);
+            const seconds = (remaining / 1000).toFixed(1);
+
+            holdTimerDisplay.textContent = `${seconds}s`;
+
+            // Check if fist held for 3 seconds
+            if (elapsed >= FIST_HOLD_DURATION) {
+              gestureDisplay.textContent = '🚨 EMERGENCY!';
+              holdTimerDisplay.textContent = '';
+              
+              // Send emergency message to React Native
+              window.ReactNativeWebView.postMessage(
+                JSON.stringify({
+                  type: 'emergency',
+                  gesture: 'fist',
+                  landmarks: landmarks,
+                })
+              );
+              
+              fistStartTime = null;
+            }
+          } else if (gesture === 'open_palm') {
+            gestureDisplay.textContent = '✋ OPEN PALM';
+            gestureDisplay.style.color = '#1de9b6';
+            fistStartTime = null;
+            holdTimerDisplay.textContent = '';
+          } else {
+            gestureDisplay.textContent = '❓ UNKNOWN';
+            gestureDisplay.style.color = '#ffb74d';
+            fistStartTime = null;
+            holdTimerDisplay.textContent = '';
+          }
+        }
+
+        // Update confidence
+        if (results.multiHandedness && results.multiHandedness.length > 0) {
+          const confidence = results.multiHandedness[0].score;
+          confidenceDisplay.textContent = `Confidence: ${(confidence * 100).toFixed(0)}%`;
+        }
+
+        // Draw hand landmarks
+        if (window.drawingUtils) {
+          drawingUtils.drawConnectors(
+            canvasCtx,
+            landmarks,
+            Hands.HAND_CONNECTIONS,
+            { color: '#00ff00', lineWidth: 2 }
+          );
+          drawingUtils.drawLandmarks(canvasCtx, landmarks, {
+            color: '#00ff00',
+            lineWidth: 1,
+          });
+        }
+      } else {
+        gestureDisplay.textContent = 'Show your hand...';
+        gestureDisplay.style.color = '#999';
+        confidenceDisplay.textContent = 'Confidence: 0%';
+        fistStartTime = null;
+        holdTimerDisplay.textContent = '';
       }
     });
+
+    // Use devicePixelRatio for better quality
+    const width = window.innerWidth || 640;
+    const height = window.innerHeight || 480;
 
     const camera = new Camera(videoElement, {
       onFrame: async () => {
         await hands.send({ image: videoElement });
       },
-      width: 640,
-      height: 480,
+      width: width,
+      height: height,
     });
 
-    camera.start();
+    // Handle errors gracefully
+    camera.start().catch((error) => {
+      console.error('Camera error:', error);
+      gestureDisplay.textContent = 'Camera Error';
+      gestureDisplay.style.color = '#ff6b6b';
+    });
   </script>
 </body>
 </html>

@@ -1,11 +1,22 @@
-// src/screens/RouteScreen.js (new version)
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Linking } from 'react-native';
+// src/screens/RouteScreen.js
+import React, { useContext } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Linking, StatusBar } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Location from 'expo-location';
+import { GuardianContext } from '../context/GuardianContext';
 import { COLORS, SPACING, FONT } from '../utils/theme';
 
 export default function RouteScreen() {
+  const { isActive } = useContext(GuardianContext);
   const [loading, setLoading] = React.useState(false);
+
+  const gradientColors = isActive
+    ? ['#0F172A', '#1E293B', '#0F172A']
+    : ['#F8FAFC', '#E2E8F0', '#F1F5F9'];
+
+  const textColor = isActive ? '#e5e7eb' : COLORS.text;
+  const subtextColor = isActive ? '#94a3b8' : COLORS.textSecondary;
+  const buttonBgColor = isActive ? COLORS.primary : COLORS.primary;
 
   const openGoogleMaps = async () => {
     try {
@@ -19,7 +30,6 @@ export default function RouteScreen() {
       const loc = await Location.getCurrentPositionAsync({});
       const { latitude, longitude } = loc.coords;
 
-      // origin = current location, destination left empty so user can type it
       const url = `https://www.google.com/maps/dir/?api=1&origin=${latitude},${longitude}`;
       const supported = await Linking.canOpenURL(url);
       if (supported) {
@@ -35,47 +45,69 @@ export default function RouteScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Plan Safe Route</Text>
-      <Text style={styles.subtitle}>
-        This will open Google Maps. Enter your destination there and follow the safest route.
-      </Text>
-
-      <TouchableOpacity style={styles.button} onPress={openGoogleMaps} disabled={loading}>
-        <Text style={styles.buttonText}>
-          {loading ? 'Opening…' : 'Open in Google Maps'}
+    <LinearGradient
+      colors={gradientColors}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.container}
+    >
+      <StatusBar 
+        barStyle={isActive ? 'light-content' : 'dark-content'} 
+        backgroundColor="transparent" 
+        translucent 
+      />
+      <View style={styles.content}>
+        <Text style={[styles.title, { color: textColor }]}>Plan Safe Route</Text>
+        <Text style={[styles.subtitle, { color: subtextColor }]}>
+          This will open Google Maps. Enter your destination there and follow the safest route.
         </Text>
-      </TouchableOpacity>
-    </View>
+
+        <TouchableOpacity 
+          style={[styles.button, { backgroundColor: buttonBgColor }]} 
+          onPress={openGoogleMaps} 
+          disabled={loading}
+        >
+          <Text style={styles.buttonText}>
+            {loading ? 'Opening…' : '🗺️ Open in Google Maps'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+  },
+  content: {
+    flex: 1,
     padding: SPACING.xl,
     justifyContent: 'center',
+    paddingTop: SPACING.xl + 20,
   },
   title: {
-    color: COLORS.textPrimary,
-    fontSize: FONT.subtitle,
+    fontSize: FONT.title,
     fontWeight: '700',
     marginBottom: SPACING.sm,
   },
   subtitle: {
-    color: COLORS.textSecondary,
     fontSize: FONT.body,
     marginBottom: SPACING.xl,
+    lineHeight: 22,
   },
   button: {
-    backgroundColor: COLORS.primary,
     borderRadius: 16,
     paddingVertical: SPACING.md,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 5,
   },
   buttonText: {
-    color: COLORS.textPrimary,
+    color: '#FFFFFF',
     fontSize: FONT.body,
     fontWeight: '600',
   },

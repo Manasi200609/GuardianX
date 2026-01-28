@@ -1,36 +1,49 @@
 // src/utils/theme.js
+// GuardianX v2 - Teal + Light Background Theme (Calm, Professional, Reassuring)
 
 export const COLORS = {
-  /* Brand Core */
-  primary: '#38BDF8',      // Soft cyan blue (guardian glow)
-  secondary: '#0EA5E9',    // Teal blue accent
-  accent: '#22C55E',       // Active / success (softened via opacity)
+  /* Brand Core - Teal Palette */
+  primary: '#14B8A6',      // Primary teal (calm, trustworthy)
+  secondary: '#0D9488',    // Darker teal accent
+  accent: '#2DD4BF',       // Light teal for active states
+  tealLight: '#5EEAD4',    // Very light teal for highlights
+  tealDark: '#0F766E',     // Dark teal for depth
 
-  /* Semantic */
-  danger: '#EF4444',       // SOS
-  warning: '#F59E0B',      // Alert
-  info: '#38BDF8',         // Maps / Location
+  /* Semantic Colors */
+  danger: '#EF4444',       // SOS / Emergency
+  warning: '#F59E0B',      // Alert / Caution
+  success: '#10B981',      // Success / Active
+  info: '#14B8A6',         // Info (matches primary)
 
-  /* Background Layers */
-  background: '#020617',   // Deep navy (main bg)
-  surface: '#070F1E',      // Page surface
-  card: '#0B1220',         // Floating cards
-  elevated: '#111827',     // Raised sections
+  /* Background Layers - Light Theme */
+  background: '#F8FAFC',   // Very light gray-blue (main bg)
+  surface: '#FFFFFF',      // Pure white (cards/surfaces)
+  card: '#FFFFFF',         // Card background
+  elevated: '#F1F5F9',     // Elevated sections
+  overlay: 'rgba(0,0,0,0.4)', // Modal overlays
 
   /* Borders & Dividers */
-  border: 'rgba(255,255,255,0.06)',
-  divider: 'rgba(255,255,255,0.04)',
+  border: '#E2E8F0',       // Light gray border
+  divider: '#CBD5E1',      // Divider lines
+  borderLight: '#F1F5F9',  // Very light border
 
-  /* Text */
-  text: '#E5E7EB',         // Primary text
-  mutedText: '#9CA3AF',    // Secondary
-  subtleText: '#6B7280',   // Captions
-  disabledText: '#4B5563',
+  /* Text - Dark on Light */
+  text: '#0F172A',         // Primary text (dark slate)
+  textSecondary: '#475569', // Secondary text
+  mutedText: '#64748B',    // Muted text
+  subtleText: '#94A3B8',   // Subtle captions
+  disabledText: '#CBD5E1', // Disabled text
+
+  /* Status Colors */
+  active: '#10B981',       // Active/on state (green)
+  inactive: '#94A3B8',     // Inactive/off state
+  standby: '#14B8A6',      // Standby (teal)
 
   /* Glow / Effects */
-  glowPrimary: 'rgba(56,189,248,0.25)',
-  glowSuccess: 'rgba(34,197,94,0.25)',
-  glowDanger: 'rgba(239,68,68,0.25)',
+  glowPrimary: 'rgba(20,184,166,0.15)',
+  glowSuccess: 'rgba(16,185,129,0.15)',
+  glowDanger: 'rgba(239,68,68,0.15)',
+  shadow: 'rgba(15,23,42,0.08)', // Subtle shadow
 };
 
 export const RADIUS = {

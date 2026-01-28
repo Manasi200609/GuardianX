@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from '../screens/LoginScreen';
 import SOSScreen from '../screens/SOSScreen';
 import SignupScreen from '../screens/SignupScreen';
+import ManifestScreen from '../screens/ManifestScreen';
 import DashboardScreen from '../screens/DashboardScreen';
 import MapScreen from '../screens/MapScreen';
 import RouteScreen from '../screens/RouteScreen';
@@ -12,6 +13,8 @@ import SettingsScreen from '../screens/SettingsScreen';
 import GestureSelectionScreen from '../screens/GestureSelectionScreen';
 import GestureCameraScreen from '../screens/GestureCameraScreen';
 import GestureScreen from '../screens/GestureScreen';
+import GuardianModeScreen from '../screens/GuardianModeScreen';
+import EmergencyDetectedScreen from '../screens/EmergencyDetectedScreen';
 
 
 const Stack = createNativeStackNavigator();
@@ -47,6 +50,17 @@ const AppNavigator = () => (
      <Stack.Screen name ="GestureCamera" component={GestureCameraScreen}/>
     <Stack.Screen name="Gesture" component={GestureScreen}
     options={{ headerShown: false }} />
+    <Stack.Screen 
+      name="GuardianMode" 
+      component={GuardianModeScreen}
+      options={{ headerShown: false }} 
+    />
+    <Stack.Screen 
+      name="EmergencyDetected" 
+      component={EmergencyDetectedScreen}
+      options={{ headerShown: false }} 
+    />
+    <Stack.Screen name="Manifest" component={ManifestScreen} />
   </Stack.Navigator>
 );
 

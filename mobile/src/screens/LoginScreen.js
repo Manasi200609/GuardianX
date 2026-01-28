@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,283 +9,169 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  StatusBar,
+  Animated,
+  Dimensions
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Shield, Lock, User, ArrowRight } from 'lucide-react-native'; // Tactical icons
 import { GuardianContext } from '../context/GuardianContext';
 import { loginUser } from '../services/api';
+
+const { width, height } = Dimensions.get('window');
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const { setUser } = useContext(GuardianContext);
 
-  const handleGoogle = () => {
-    // not implemented for now
-  };
+  // Animations
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scanLineAnim = useRef(new Animated.Value(-height)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 1000,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  // Background sweep logic
+  useEffect(() => {
+    if (loading) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(scanLineAnim, { toValue: height, duration: 1500, useNativeDriver: true }),
+          Animated.timing(scanLineAnim, { toValue: -height, duration: 0, useNativeDriver: true }),
+        ])
+      ).start();
+    }
+  }, [loading]);
 
   const handleSignIn = async () => {
+    if (!email || !password) {
+      Alert.alert('Missing fields', 'Please enter email and password.');
+      return;
+    }
     try {
-      if (!email || !password) {
-        Alert.alert('Missing fields', 'Please enter email and password.');
-        return;
-      }
-
-      // loginUser should return the user object from backend (with _id)
+      setLoading(true);
       const user = await loginUser({ email, password });
-      console.log('Login user =', user);          // debug: confirm _id is present
-
-      setUser(user);                              // store in context if you use it
-
-      // IMPORTANT: pass user to Dashboard so SOS can use user._id
-      navigation.replace('Dashboard', { user });
+      setUser(user);
+      // Moving to the Motto/Manifest screen next
+      navigation.replace('Manifest', { user });
     } catch (error) {
-      console.log('Login error:', error.response?.data || error.message);
-      Alert.alert('Login failed', 'Check your email and password.');
+      setLoading(false);
+      Alert.alert('Login failed', 'Check your credentials.');
     }
   };
 
-  const handleSignup = () => {
-    navigation.navigate('Signup');
-  };
-
   return (
-    <KeyboardAvoidingView
-      style={styles.page}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <View style={styles.card}>
-        <View className="logoCircle" style={styles.logoCircle}>
-          <Image
-            source={require('../../assets/guardianx-logo.png.jpeg')}
-            style={styles.logoImg}
-          />
-        </View>
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" />
+      
+      {/* 1. TACTICAL HEX BACKGROUND */}
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: '#020617' }]} />
+      <Image 
+        source={require('../../assets/tactical_hex.jpg')} 
+        style={styles.fullScreenBackground}
+        resizeMode="cover"
+      />
+      <LinearGradient 
+        colors={['rgba(2, 6, 23, 0.8)', 'rgba(2, 6, 23, 0.95)']} 
+        style={StyleSheet.absoluteFill} 
+      />
 
-        <Text style={styles.title}>Welcome to GuardianX</Text>
-        <Text style={styles.subtitle}>Sign in to continue</Text>
+      {/* 2. SCANNING LINE */}
+      {loading && (
+        <Animated.View style={[styles.scanLine, { transform: [{ translateY: scanLineAnim }] }]}>
+          <LinearGradient colors={['transparent', 'rgba(56, 189, 248, 0.3)', 'transparent']} style={{flex: 1}} />
+        </Animated.View>
+      )}
 
-        <TouchableOpacity style={styles.googleBtn} onPress={handleGoogle}>
-          <View style={styles.googleIconBox}>
-            <Text style={styles.googleIconText}>G</Text>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.centeringWrapper}>
+        <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
+          
+          <View style={styles.header}>
+            <View style={styles.logoContainer}>
+               <Image source={require('../../assets/guardianx-logo.png.jpeg')} style={styles.logoImg} />
+               <View style={styles.logoRing} />
+            </View>
+            <Text style={styles.brand}>GUARDIAN<Text style={{color: '#38BDF8'}}>X</Text></Text>
+            <Text style={styles.tagline}>H U M A N  S A F E T Y  N E T W O R K</Text>
           </View>
-          <Text style={styles.googleBtnText}>Continue with Google</Text>
-        </TouchableOpacity>
 
-        <View className="divider" style={styles.divider}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>OR</Text>
-          <View style={styles.dividerLine} />
-        </View>
+          <View style={styles.glassCard}>
+            <Text style={styles.label}>Email</Text>
+            <View style={styles.inputWrapper}>
+              <User color="rgba(56, 189, 248, 0.4)" size={18} style={styles.inputIcon} />
+              <TextInput 
+                placeholder="you@example.com" 
+                placeholderTextColor="rgba(148, 163, 184, 0.3)"
+                style={styles.input}
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+              />
+            </View>
 
-        <Text style={styles.label}>Email</Text>
-        <View style={styles.inputWrapper}>
-          <Text style={styles.inputIcon}>✉️</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="you@example.com"
-            placeholderTextColor="#9ca3af"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-        </View>
+            <Text style={styles.label}>Password</Text>
+            <View style={styles.inputWrapper}>
+              <Lock color="rgba(56, 189, 248, 0.4)" size={18} style={styles.inputIcon} />
+              <TextInput 
+                placeholder="••••••••" 
+                placeholderTextColor="rgba(148, 163, 184, 0.3)"
+                secureTextEntry
+                style={styles.input}
+                value={password}
+                onChangeText={setPassword}
+              />
+            </View>
 
-        <Text style={styles.label}>Password</Text>
-        <View style={styles.inputWrapper}>
-          <Text style={styles.inputIcon}>🔒</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="••••••••"
-            placeholderTextColor="#9ca3af"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
-        </View>
+            <TouchableOpacity 
+              style={[styles.primaryBtn, loading && { opacity: 0.7 }]} 
+              onPress={handleSignIn}
+              disabled={loading}
+            >
+              <Text style={styles.primaryBtnText}>{loading ? 'SIGNING IN...' : 'SIGN IN'}</Text>
+            </TouchableOpacity>
 
-        <TouchableOpacity style={styles.primaryBtn} onPress={handleSignIn}>
-          <Text style={styles.primaryBtnText}>Sign in</Text>
-        </TouchableOpacity>
+            <TouchableOpacity style={styles.signupBtn} onPress={() => navigation.navigate('Signup')}>
+              <Text style={styles.signupText}>Need an account? Sign up</Text>
+              <ArrowRight color="#38BDF8" size={14} style={{marginLeft: 8}} />
+            </TouchableOpacity>
+          </View>
 
-        <TouchableOpacity style={styles.linkBtn}>
-          <Text style={styles.linkBtnText}>Forgot password?</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.footer}>
-          Need an account?{' '}
-          <Text style={styles.footerLink} onPress={handleSignup}>
-            Sign up
-          </Text>
-        </Text>
-      </View>
-    </KeyboardAvoidingView>
+          <Text style={styles.footerInfo}>STABLE v4.2.0 | ENCRYPTED LINK ACTIVE</Text>
+        </Animated.View>
+      </KeyboardAvoidingView>
+    </View>
   );
 };
 
-export default LoginScreen;
-
 const styles = StyleSheet.create({
-  page: {
-    flex: 1,
-    backgroundColor: '#020617',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  card: {
-    width: '100%',
-    maxWidth: 380,
-    backgroundColor: '#ffffff',
-    borderRadius: 26,
-    paddingTop: 52,
-    paddingHorizontal: 26,
-    paddingBottom: 24,
-    shadowColor: '#0f172a',
-    shadowOpacity: 0.12,
-    shadowRadius: 30,
-    shadowOffset: { width: 0, height: 22 },
-    elevation: 8,
-    position: 'relative',
-  },
-  logoCircle: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    backgroundColor: '#ffffff',
-    position: 'absolute',
-    top: -35,
-    left: '50%',
-    marginLeft: -16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#0f172a',
-    shadowOpacity: 0.2,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 16 },
-    elevation: 6,
-    overflow: 'hidden',
-  },
-  logoImg: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    resizeMode: 'cover',
-  },
-  title: {
-    fontSize: 22,
-    textAlign: 'center',
-    color: '#0f172a',
-    fontWeight: '700',
-    marginBottom: 6,
-  },
-  subtitle: {
-    fontSize: 13,
-    textAlign: 'center',
-    color: '#6b7280',
-    marginBottom: 20,
-  },
-  googleBtn: {
-    width: '100%',
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    backgroundColor: '#ffffff',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    marginBottom: 18,
-  },
-  googleIconBox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    backgroundColor: '#ffffff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 8,
-  },
-  googleIconText: {
-    fontWeight: '600',
-    color: '#4285f4',
-    fontSize: 14,
-  },
-  googleBtnText: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: 14,
-    color: '#111827',
-  },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 18,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#e5e7eb',
-  },
-  dividerText: {
-    marginHorizontal: 8,
-    fontSize: 11,
-    color: '#9ca3af',
-    letterSpacing: 2,
-  },
-  label: {
-    fontSize: 12,
-    color: '#4b5563',
-    marginBottom: 4,
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    backgroundColor: '#f9fafb',
-    paddingHorizontal: 10,
-    marginBottom: 10,
-  },
-  inputIcon: {
-    fontSize: 14,
-    marginRight: 6,
-  },
-  input: {
-    flex: 1,
-    fontSize: 14,
-    color: '#111827',
-    paddingVertical: 10,
-  },
-  primaryBtn: {
-    width: '100%',
-    borderRadius: 999,
-    backgroundColor: '#020617',
-    paddingVertical: 11,
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  primaryBtnText: {
-    color: '#f9fafb',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  linkBtn: {
-    marginTop: 10,
-    alignItems: 'center',
-  },
-  linkBtnText: {
-    fontSize: 12,
-    color: '#6b7280',
-  },
-  footer: {
-    marginTop: 10,
-    fontSize: 12,
-    textAlign: 'center',
-    color: '#6b7280',
-  },
-  footerLink: {
-    color: '#020617',
-    fontWeight: '600',
-  },
+  container: { flex: 1 },
+  fullScreenBackground: { position: 'absolute', width: width, height: height, opacity: 0.25 },
+  scanLine: { position: 'absolute', width: '100%', height: 200, zIndex: 5 },
+  centeringWrapper: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  content: { width: width > 450 ? 400 : '86%', zIndex: 10 },
+  header: { alignItems: 'center', marginBottom: 40 },
+  logoContainer: { width: 80, height: 80, justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
+  logoImg: { width: 70, height: 70, borderRadius: 35 },
+  logoRing: { ...StyleSheet.absoluteFillObject, borderWidth: 1, borderColor: 'rgba(56, 189, 248, 0.3)', borderRadius: 24, transform: [{ rotate: '45deg' }] },
+  brand: { color: '#FFFFFF', fontSize: 32, fontWeight: '900', letterSpacing: 2 },
+  tagline: { color: '#64748B', fontSize: 9, letterSpacing: 4, marginTop: 8, fontWeight: '700' },
+  glassCard: { backgroundColor: 'rgba(15, 23, 42, 0.92)', padding: 32, borderRadius: 28, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.05)' },
+  label: { color: '#38BDF8', fontSize: 10, fontWeight: '900', letterSpacing: 1.5, marginBottom: 10, marginTop: 10 },
+  inputWrapper: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#020617', borderRadius: 12, borderWidth: 1, borderColor: 'rgba(56, 189, 248, 0.15)', marginBottom: 15 },
+  inputIcon: { marginLeft: 15 },
+  input: { flex: 1, padding: 16, color: '#F8FAFC', fontSize: 15 },
+  primaryBtn: { backgroundColor: '#38BDF8', paddingVertical: 16, borderRadius: 12, alignItems: 'center', marginTop: 20 },
+  primaryBtnText: { color: '#020617', fontWeight: '900', letterSpacing: 1 },
+  signupBtn: { marginTop: 25, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+  signupText: { color: '#64748B', fontSize: 13, fontWeight: '700' },
+  footerInfo: { marginTop: 40, color: 'rgba(148, 163, 184, 0.2)', fontSize: 9, textAlign: 'center' }
 });
+
+export default LoginScreen;

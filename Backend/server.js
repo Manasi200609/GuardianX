@@ -4,21 +4,34 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 
 const userRoutes = require('./routes/userRoutes');
-const sosRoutes = require('./routes/sosRoutes'); // ← add this
+const sosRoutes = require('./routes/sosRoutes');
+const emergencyRoutes = require('./routes/emergencyRoutes'); // Emergency logs
 
 const app = express();
 
 // middleware
-app.use(cors());
+app.use(cors({
+  origin: '*', // Allow all origins (for development)
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning'],
+  credentials: true
+}));
 app.use(express.json());
 
+// Request logging middleware
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  next();
+});
 
 // All user-related routes: /api/users/...
 app.use('/api/users', userRoutes);
 
 // SOS routes under same base: /api/users/:userId/sos
 app.use('/api/users', sosRoutes);
-// or userRoutes
+
+// Emergency logs routes: /api/emergencies/...
+app.use('/api/emergencies', emergencyRoutes);
 
 // test route
 app.get('/test', (req, res) => {

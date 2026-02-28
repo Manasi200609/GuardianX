@@ -5,13 +5,25 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Image,
   Switch,
   ScrollView,
   StatusBar,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GuardianContext } from '../context/GuardianContext';
+import { COLORS } from '../utils/theme';
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  MapPinIcon,
+  MoonIcon,
+  BellIcon,
+  UserCircleIcon,
+  UserPlusIcon,
+  HandRaisedIcon,
+  DevicePhoneMobileIcon,
+  ArrowRightOnRectangleIcon,
+} from 'react-native-heroicons/outline';
 
 const SettingsScreen = ({ navigation }) => {
   const { isActive } = useContext(GuardianContext);
@@ -49,10 +61,7 @@ const SettingsScreen = ({ navigation }) => {
             style={[styles.backBtn, { backgroundColor: cardBgColor, borderColor: borderColor }]}
             onPress={() => navigation.goBack()}
           >
-            <Image
-              source={require('../../assets/arrow.png')}
-              style={[styles.backIcon, { tintColor: textColor }]}
-            />
+            <ChevronLeftIcon size={20} color={textColor} />
           </TouchableOpacity>
 
           <View>
@@ -66,7 +75,7 @@ const SettingsScreen = ({ navigation }) => {
         {/* Profile card */}
         <View style={[styles.card, styles.profileCard, { backgroundColor: cardBgColor, borderColor: borderColor }]}>
           <View style={styles.avatarCircle}>
-            <Text style={styles.avatarIcon}>👤</Text>
+            <UserCircleIcon size={26} color={isActive ? '#0F172A' : '#0F172A'} />
           </View>
           <View>
             <Text style={[styles.profileName, { color: textColor }]}>Mansi Jadhav</Text>
@@ -83,7 +92,7 @@ const SettingsScreen = ({ navigation }) => {
             <View style={styles.row}>
               <View style={styles.rowLeft}>
                 <View style={[styles.pill, styles.pillLocation]}>
-                  <Text style={styles.pillIcon}>📍</Text>
+                  <MapPinIcon size={18} color={COLORS.primary} />
                 </View>
                 <View>
                   <Text style={[styles.rowTitle, { color: textColor }]}>Auto Share Location</Text>
@@ -106,7 +115,7 @@ const SettingsScreen = ({ navigation }) => {
             <View style={styles.row}>
               <View style={styles.rowLeft}>
                 <View style={[styles.pill, styles.pillNight]}>
-                  <Text style={styles.pillIcon}>🌙</Text>
+                  <MoonIcon size={18} color={COLORS.secondary} />
                 </View>
                 <View>
                   <Text style={[styles.rowTitle, { color: textColor }]}>Auto Night Mode</Text>
@@ -135,16 +144,15 @@ const SettingsScreen = ({ navigation }) => {
           >
             <View style={styles.rowLeft}>
               <View style={[styles.pill, styles.pillContacts]}>
-                <Text style={styles.pillIcon}>🔔</Text>
+                <UserPlusIcon size={18} color={COLORS.accent} />
               </View>
               <View>
                 <Text style={[styles.rowTitle, { color: textColor }]}>Emergency Contacts</Text>
                 <Text style={[styles.rowSub, { color: subtextColor }]}>
-                  Manage your safety contacts
-                </Text>
+                  Manage your safety contacts</Text>
               </View>
             </View>
-            <Text style={[styles.chevron, { color: subtextColor }]}>›</Text>
+            <ChevronRightIcon size={18} color={subtextColor} />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -153,16 +161,15 @@ const SettingsScreen = ({ navigation }) => {
           >
             <View style={styles.rowLeft}>
               <View style={[styles.pill, styles.pillGesture]}>
-                <Text style={styles.pillIcon}>🛡️</Text>
+                <HandRaisedIcon size={18} color={COLORS.secondary} />
               </View>
               <View>
                 <Text style={[styles.rowTitle, { color: textColor }]}>Emergency Gesture</Text>
                 <Text style={[styles.rowSub, { color: subtextColor }]}>
-                  Configure your safety trigger
-                </Text>
+                  Configure your safety trigger</Text>
               </View>
             </View>
-            <Text style={[styles.chevron, { color: subtextColor }]}>›</Text>
+            <ChevronRightIcon size={18} color={subtextColor} />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -171,14 +178,14 @@ const SettingsScreen = ({ navigation }) => {
           >
             <View style={styles.rowLeft}>
               <View style={[styles.pill, styles.pillWatch]}>
-                <Text style={styles.pillIcon}>⌚</Text>
+                <DevicePhoneMobileIcon size={18} color={COLORS.accent} />
               </View>
               <View>
                 <Text style={[styles.rowTitle, { color: textColor }]}>Smartwatch</Text>
                 <Text style={[styles.rowSub, { color: subtextColor }]}>Not connected</Text>
               </View>
             </View>
-            <Text style={[styles.chevron, { color: subtextColor }]}>›</Text>
+            <ChevronRightIcon size={18} color={subtextColor} />
           </TouchableOpacity>
         </View>
 
@@ -187,7 +194,7 @@ const SettingsScreen = ({ navigation }) => {
           style={[styles.signoutBtn, { backgroundColor: isActive ? '#991b1b' : '#fee2e2' }]}
           onPress={() => navigation.replace('Login')}
         >
-          <Text style={[styles.signoutIcon, { color: isActive ? '#fca5a5' : '#ef4444' }]}>⟲</Text>
+          <ArrowRightOnRectangleIcon size={16} color={isActive ? '#fca5a5' : '#ef4444'} />
           <Text style={[styles.signoutText, { color: isActive ? '#fca5a5' : '#ef4444' }]}>Sign Out</Text>
         </TouchableOpacity>
 

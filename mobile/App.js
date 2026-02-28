@@ -1,10 +1,11 @@
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+// Run bootstrap first to set theme globals before any other module loads
+require('./src/bootstrap');
 
-import AppNavigator from './src/navigation/AppNavigator';
-import { GuardianProvider } from './src/context/GuardianContext';
+const React = require('react');
+const { NavigationContainer } = require('@react-navigation/native');
 
-
+const AppNavigator = require('./src/navigation/AppNavigator').default;
+const { GuardianProvider } = require('./src/context/GuardianContext');
 
 export default function App() {
   return (

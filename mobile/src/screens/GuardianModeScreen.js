@@ -22,7 +22,7 @@ import * as Location from 'expo-location';
 
 const GuardianModeScreen = () => {
   const navigation = useNavigation();
-  const { isActive, user } = useContext(GuardianContext);
+  const { isActive, user, sendSOS } = useContext(GuardianContext);
   const [locationStatus, setLocationStatus] = useState('initializing');
   const [pulseAnim] = useState(new Animated.Value(1));
   const [showCamera, setShowCamera] = useState(false);
@@ -30,6 +30,11 @@ const GuardianModeScreen = () => {
   const [motionSub, setMotionSub] = useState(null);
   const lastShakeTime = useRef(0);
   const webViewRef = useRef(null);
+  const pulseAnimRef = useRef(null); // Store animation loop ref for cleanup
+
+  // temporary overlay after shake
+  const [shakeAlertVisible, setShakeAlertVisible] = useState(false);
+  const [shakeAlertText, setShakeAlertText] = useState('');
 
   const SHAKE_THRESHOLD = 2.5; // Vigorous shake threshold
   const SHAKE_WINDOW = 500; // 500ms window for shake
@@ -48,7 +53,13 @@ const GuardianModeScreen = () => {
 
   useEffect(() => {
     if (isActive) {
-      Animated.loop(
+      // Stop any existing animation
+      if (pulseAnimRef.current) {
+        pulseAnimRef.current.stop();
+      }
+
+      // Start new animation loop
+      pulseAnimRef.current = Animated.loop(
         Animated.sequence([
           Animated.timing(pulseAnim, {
             toValue: 1.1,
@@ -61,9 +72,29 @@ const GuardianModeScreen = () => {
             useNativeDriver: true,
           }),
         ])
-      ).start();
+      );
+      pulseAnimRef.current.start();
+    } else {
+      // Stop animation when Guardian Mode is inactive
+      if (pulseAnimRef.current) {
+        pulseAnimRef.current.stop();
+        pulseAnimRef.current = null;
+      }
+      // Reset animation value
+      Animated.timing(pulseAnim, {
+        toValue: 1,
+        duration: 0,
+        useNativeDriver: true,
+      }).start();
     }
+
+    return () => {
+      if (pulseAnimRef.current) {
+        pulseAnimRef.current.stop();
+      }
+    };
   }, [isActive, pulseAnim]);
+
 
   const initializeGuardianMode = async () => {
     console.log('🛡️ Initializing Guardian Mode...');
@@ -119,18 +150,41 @@ const GuardianModeScreen = () => {
 
         if (magnitude > SHAKE_THRESHOLD) {
           if (now - lastShakeTime.current > SHAKE_WINDOW) {
-            console.log('📳 VIGOROUS SHAKE DETECTED! Opening camera...');
+            console.log('📳 VIGOROUS SHAKE DETECTED!');
             lastShakeTime.current = now;
-            setShowCamera(true);
-            setDetectionStatus('📷 Camera Active - Show gesture!');
-            
-            // Auto-close camera after 30 seconds if no detection
-            setTimeout(() => {
-              if (showCamera) {
-                setShowCamera(false);
-                setDetectionStatus('🎯 Listening for shake...');
+
+            // send SOS immediately
+            (async () => {
+              try {
+                setDetectionStatus('🚨 Sending SOS...');
+
+                // try get current location quickly
+                let loc = null;
+                try {
+                  const { status } = await Location.requestForegroundPermissionsAsync();
+                  if (status === 'granted') {
+                    const l = await Location.getCurrentPositionAsync({});
+                    loc = {
+                      latitude: l.coords.latitude,
+                      longitude: l.coords.longitude,
+                    };
+                  }
+                } catch (e) {
+                  console.warn('⚠️ Location fetch failed', e.message);
+                }
+
+                await sendSOS(loc);
+                setDetectionStatus('🚨 SOS SENT');
+              } catch (err) {
+                console.error('❌ Error sending SOS from shake:', err);
+                setDetectionStatus('❌ SOS FAILED');
               }
-            }, 30000);
+            })();
+
+            // show quick overlay message
+            setShakeAlertText('� Emergency detected!\nSOS sent – help is on the way');
+            setShakeAlertVisible(true);
+            setTimeout(() => setShakeAlertVisible(false), 3000);
           }
         }
       });
@@ -148,6 +202,17 @@ const GuardianModeScreen = () => {
     setLocationStatus('inactive');
     setDetectionStatus('Inactive');
     setShowCamera(false);
+
+    // Stop and reset animation
+    if (pulseAnimRef.current) {
+      pulseAnimRef.current.stop();
+      pulseAnimRef.current = null;
+    }
+    Animated.timing(pulseAnim, {
+      toValue: 1,
+      duration: 0,
+      useNativeDriver: true,
+    }).start();
 
     if (motionSub) {
       motionSub.remove();
@@ -212,6 +277,20 @@ const GuardianModeScreen = () => {
     >
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
       
+      {/* shake alert overlay */}
+      <Modal
+        visible={shakeAlertVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShakeAlertVisible(false)}
+      >
+        <View style={styles.shakeAlertContainer}>
+          <View style={styles.shakeAlertBox}>
+            <Text style={styles.shakeAlertText}>{shakeAlertText}</Text>
+          </View>
+        </View>
+      </Modal>
+
       {/* MediaPipe Camera Modal - Opens on shake */}
       <Modal 
         visible={showCamera} 
@@ -542,6 +621,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.sm,
     borderRadius: 8,
+  },
+  shakeAlertContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: SPACING.lg,
+  },
+  shakeAlertBox: {
+    backgroundColor: COLORS.danger,
+    padding: SPACING.xl,
+    borderRadius: RADIUS.lg,
+    borderWidth: 2,
+    borderColor: COLORS.accent,
+    maxWidth: '90%',
+  },
+  shakeAlertText: {
+    color: '#fff',
+    fontSize: FONT.title,
+    fontWeight: '700',
+    textAlign: 'center',
+    lineHeight: 28,
   },
   closeCamera: {
     position: 'absolute',

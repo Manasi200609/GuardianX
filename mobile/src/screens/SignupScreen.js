@@ -14,6 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import PrimaryButton from '../components/PrimaryButton';
 import { signupUser } from '../services/api';
 import { COLORS, SPACING, FONT } from '../utils/theme';
+import { UserIcon, EnvelopeIcon, LockClosedIcon } from 'react-native-heroicons/outline';
 
 const SignupScreen = ({ navigation }) => {
   const [name, setName] = useState('');
@@ -59,7 +60,7 @@ const SignupScreen = ({ navigation }) => {
           {/* Name Input */}
           <Text style={styles.label}>Full Name</Text>
           <View style={styles.inputWrapper}>
-            <Text style={styles.inputIcon}>👤</Text>
+            <UserIcon size={18} color={COLORS.mutedText} style={styles.inputIcon} />
             <TextInput
               style={styles.input}
               placeholder="Your full name"
@@ -73,7 +74,7 @@ const SignupScreen = ({ navigation }) => {
           {/* Email Input */}
           <Text style={styles.label}>Email Address</Text>
           <View style={styles.inputWrapper}>
-            <Text style={styles.inputIcon}>✉️</Text>
+            <EnvelopeIcon size={18} color={COLORS.mutedText} style={styles.inputIcon} />
             <TextInput
               style={styles.input}
               placeholder="you@example.com"
@@ -89,7 +90,7 @@ const SignupScreen = ({ navigation }) => {
           {/* Password Input */}
           <Text style={styles.label}>Password</Text>
           <View style={styles.inputWrapper}>
-            <Text style={styles.inputIcon}>🔒</Text>
+            <LockClosedIcon size={18} color={COLORS.mutedText} style={styles.inputIcon} />
             <TextInput
               style={styles.input}
               placeholder="Create a strong password"
@@ -183,7 +184,6 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
   },
   inputIcon: {
-    fontSize: 18,
     marginRight: SPACING.sm,
   },
   input: {

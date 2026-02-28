@@ -60,7 +60,10 @@ const AppNavigator = () => (
       component={EmergencyDetectedScreen}
       options={{ headerShown: false }} 
     />
-    <Stack.Screen name="Manifest" component={ManifestScreen} />
+    <Stack.Screen 
+    name="Manifest" 
+    component={ManifestScreen} 
+    options={{ headerShown: false }} />
   </Stack.Navigator>
 );
 

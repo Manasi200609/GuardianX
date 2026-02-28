@@ -14,7 +14,8 @@ import {
   Dimensions
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Shield, Lock, User, ArrowRight } from 'lucide-react-native'; // Tactical icons
+// using heroicons for consistent look
+import { UserIcon, LockClosedIcon, ArrowRightIcon } from 'react-native-heroicons/outline';
 import { GuardianContext } from '../context/GuardianContext';
 import { loginUser } from '../services/api';
 
@@ -105,7 +106,7 @@ const LoginScreen = ({ navigation }) => {
           <View style={styles.glassCard}>
             <Text style={styles.label}>Email</Text>
             <View style={styles.inputWrapper}>
-              <User color="rgba(56, 189, 248, 0.4)" size={18} style={styles.inputIcon} />
+              <UserIcon color="rgba(56, 189, 248, 0.4)" size={18} style={styles.inputIcon} />
               <TextInput 
                 placeholder="you@example.com" 
                 placeholderTextColor="rgba(148, 163, 184, 0.3)"
@@ -118,7 +119,7 @@ const LoginScreen = ({ navigation }) => {
 
             <Text style={styles.label}>Password</Text>
             <View style={styles.inputWrapper}>
-              <Lock color="rgba(56, 189, 248, 0.4)" size={18} style={styles.inputIcon} />
+              <LockClosedIcon color="rgba(56, 189, 248, 0.4)" size={18} style={styles.inputIcon} />
               <TextInput 
                 placeholder="••••••••" 
                 placeholderTextColor="rgba(148, 163, 184, 0.3)"
@@ -139,7 +140,7 @@ const LoginScreen = ({ navigation }) => {
 
             <TouchableOpacity style={styles.signupBtn} onPress={() => navigation.navigate('Signup')}>
               <Text style={styles.signupText}>Need an account? Sign up</Text>
-              <ArrowRight color="#38BDF8" size={14} style={{marginLeft: 8}} />
+                <ArrowRightIcon color="#38BDF8" size={14} style={{marginLeft: 8}} />
             </TouchableOpacity>
           </View>
 
@@ -162,8 +163,8 @@ const styles = StyleSheet.create({
   logoRing: { ...StyleSheet.absoluteFillObject, borderWidth: 1, borderColor: 'rgba(56, 189, 248, 0.3)', borderRadius: 24, transform: [{ rotate: '45deg' }] },
   brand: { color: '#FFFFFF', fontSize: 32, fontWeight: '900', letterSpacing: 2 },
   tagline: { color: '#64748B', fontSize: 9, letterSpacing: 4, marginTop: 8, fontWeight: '700' },
-  glassCard: { backgroundColor: 'rgba(15, 23, 42, 0.92)', padding: 32, borderRadius: 28, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.05)' },
-  label: { color: '#38BDF8', fontSize: 10, fontWeight: '900', letterSpacing: 1.5, marginBottom: 10, marginTop: 10 },
+  glassCard: { backgroundColor: 'rgba(15, 23, 42, 0.92)', padding: 32, borderRadius: 30, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.05)', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 15, shadowOffset: { width: 0, height: 5 }, elevation: 10 },
+  label: { color: COLORS.primary, fontSize: 10, fontWeight: '900', letterSpacing: 1.5, marginBottom: 10, marginTop: 10 },
   inputWrapper: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#020617', borderRadius: 12, borderWidth: 1, borderColor: 'rgba(56, 189, 248, 0.15)', marginBottom: 15 },
   inputIcon: { marginLeft: 15 },
   input: { flex: 1, padding: 16, color: '#F8FAFC', fontSize: 15 },

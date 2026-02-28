@@ -29,6 +29,7 @@ export const COLORS = {
 
   /* Text - Dark on Light */
   text: '#0F172A',         // Primary text (dark slate)
+  textPrimary: '#0F172A',  // alias for legacy references
   textSecondary: '#475569', // Secondary text
   mutedText: '#64748B',    // Muted text
   subtleText: '#94A3B8',   // Subtle captions
@@ -71,4 +72,12 @@ export const FONT = {
   subtitle: 16,
   body: 14,
   caption: 12,
+};
+
+// Default export for consumers that import the module as a default
+export default {
+  COLORS,
+  RADIUS,
+  SPACING,
+  FONT,
 };

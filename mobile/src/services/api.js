@@ -10,13 +10,13 @@ import axios from 'axios';
 // - iOS Simulator: http://localhost:5000/api/users
 // - Physical Device: http://YOUR_COMPUTER_IP:5000/api/users
 const API_BASE_URL = __DEV__
-  ? 'http://10.197.200.205:5000/api/users' // Android emulator (change for iOS/physical device)
-  : 'http://10.197.200.205:5000/api/users'; // Production
+  ? 'http://10.252.34.205:5000/api/users' // Android emulator (change for iOS/physical device)
+  : 'http://10.252.34.205:5000/api/users'; // Production
 
 console.log('API_BASE_URL at runtime =', API_BASE_URL);
 
 export { API_BASE_URL };
-
+ 
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
